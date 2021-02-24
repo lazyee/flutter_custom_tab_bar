@@ -3,13 +3,18 @@ library flutter_custom_tab_bar;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+typedef IndexedTabItemBuilder = Widget Function(
+    BuildContext context, int index, double page);
+
 class CustomTabBar extends StatefulWidget {
-  final List<Widget> children;
+  final IndexedTabItemBuilder builder;
+  final int itemCount;
   final CustomTabIndicator tabIndicator;
   final PageController pageController;
 
   const CustomTabBar(
-      {@required this.children,
+      {@required this.builder,
+      @required this.itemCount,
       @required this.pageController,
       @required this.tabIndicator,
       Key key})
@@ -23,15 +28,21 @@ class _CustomTabBarState extends State<CustomTabBar> {
   List<Size> sizeList;
   ScrollController _scrollController = ScrollController();
   GlobalKey _scrollableKey = GlobalKey();
+  GlobalKey<__TabItemListState> _tabItemListState =
+      GlobalKey<__TabItemListState>();
   final Duration animDuration = Duration(milliseconds: 300);
+  int currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    sizeList = List(widget.children.length);
+    sizeList = List(widget.itemCount);
+    // sizeList = List(widget.children.length);
 
     widget.pageController.addListener(() {
       if (widget.pageController.page % 1.0 == 0) {
+        _tabItemListState.currentState.updateSelectedIndex();
+
         widget.tabIndicator.controller.scrollTargetIndexTarBarItemToCenter(
             _scrollableKey.currentContext.size.width / 2,
             widget.pageController.page.toInt(),
@@ -69,37 +80,79 @@ class _CustomTabBarState extends State<CustomTabBar> {
     );
   }
 
+  void _onTapTabItem(int index) {
+    widget.tabIndicator.controller.scrollTargetIndexTarBarItemToCenter(
+        _scrollableKey.currentContext.size.width / 2,
+        index,
+        sizeList,
+        _scrollController,
+        animDuration);
+
+    widget.tabIndicator.controller
+        .indicatorScrollToIndex(index, sizeList, animDuration);
+
+    widget.pageController
+        .animateToPage(index, duration: animDuration, curve: Curves.ease);
+  }
+
   Widget _buildSlivers() {
-    List<Widget> slivers = [];
-    List<Widget> tabItems = [];
+    var listView = _TabItemList(
+      key: _tabItemListState,
+      builder: (context, index) =>
+          widget.builder(context, index, widget.pageController.page ?? 0),
+      onTapTabItem: _onTapTabItem,
+      itemCount: widget.itemCount,
+      sizeList: sizeList,
+    );
 
-    for (int i = 0; i < widget.children.length; i++) {
-      tabItems.add(InkWell(
-          onTap: () {
-            widget.tabIndicator.controller.scrollTargetIndexTarBarItemToCenter(
-                _scrollableKey.currentContext.size.width / 2,
-                i,
-                sizeList,
-                _scrollController,
-                animDuration);
-
-            widget.tabIndicator.controller
-                .indicatorScrollToIndex(i, sizeList, animDuration);
-
-            widget.pageController
-                .animateToPage(i, duration: animDuration, curve: Curves.ease);
-          },
-          child: _TabItem(
-              child: widget.children[i], index: i, sizeList: sizeList)));
-    }
-
-    slivers.add(Stack(
+    var child = Stack(
       children: [
-        Row(children: tabItems),
+        listView,
         widget.tabIndicator,
       ],
-    ));
-    return SliverList(delegate: SliverChildListDelegate(slivers));
+    );
+    return SliverList(delegate: SliverChildListDelegate([child]));
+  }
+}
+
+class _TabItemList extends StatefulWidget {
+  final int itemCount;
+  final IndexedWidgetBuilder builder;
+  final List<Size> sizeList;
+  final void Function(int index) onTapTabItem;
+  _TabItemList(
+      {@required this.itemCount,
+      @required this.builder,
+      @required this.sizeList,
+      @required this.onTapTabItem,
+      key})
+      : super(key: key);
+
+  @override
+  __TabItemListState createState() => __TabItemListState();
+}
+
+class __TabItemListState extends State<_TabItemList> {
+  void updateSelectedIndex() {
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemBuilder: (context, index) {
+          return InkWell(
+              onTap: () => widget.onTapTabItem(index),
+              child: _TabItem(
+                child: widget.builder(context, index),
+                // widget.builder(context, index, widget.pageController.page),
+                sizeList: widget.sizeList,
+                index: index,
+              ));
+        },
+        shrinkWrap: true,
+        itemCount: widget.itemCount);
   }
 }
 
