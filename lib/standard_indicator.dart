@@ -93,6 +93,9 @@ class _StandardIndicatorState extends State<StandardIndicator>
 
   @override
   Widget build(BuildContext context) {
+    if (left == right && left == 0) {
+      return SizedBox();
+    }
     return Positioned(
       key: widget.key,
       left: left,
