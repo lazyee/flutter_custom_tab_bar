@@ -3,12 +3,13 @@ library flutter_custom_tab_bar;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-typedef IndexedTabItemBuilder = Widget Function(
-    BuildContext context, int index, double page);
+typedef IndexedTabItemBuilder = Widget Function(BuildContext context, int index,
+    double page, bool isTapJumpPage, int currentIndex);
 
 class CustomTabBar extends StatefulWidget {
   final IndexedTabItemBuilder builder;
   final int itemCount;
+  final int defaultPage;
   final CustomTabIndicator tabIndicator;
   final PageController pageController;
 
@@ -17,6 +18,7 @@ class CustomTabBar extends StatefulWidget {
       @required this.itemCount,
       @required this.pageController,
       @required this.tabIndicator,
+      this.defaultPage = 0,
       Key key})
       : super(key: key);
 
@@ -40,9 +42,8 @@ class _CustomTabBarState extends State<CustomTabBar> {
     // sizeList = List(widget.children.length);
 
     widget.pageController.addListener(() {
+      _tabItemListState.currentState.updateSelectedIndex();
       if (widget.pageController.page % 1.0 == 0) {
-        _tabItemListState.currentState.updateSelectedIndex();
-
         widget.tabIndicator.controller.scrollTargetIndexTarBarItemToCenter(
             _scrollableKey.currentContext.size.width / 2,
             widget.pageController.page.toInt(),
@@ -56,6 +57,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
 
     ///延迟一下获取具体的size
     Future.delayed(Duration(milliseconds: 50), () {
+      widget.pageController.jumpToPage(widget.defaultPage);
       widget.tabIndicator.controller.updateScrollIndicator(
           widget.pageController.page, sizeList, animDuration);
     });
@@ -80,7 +82,9 @@ class _CustomTabBarState extends State<CustomTabBar> {
     );
   }
 
+  var tapIndex = -1;
   void _onTapTabItem(int index) {
+    tapIndex = index;
     widget.tabIndicator.controller.scrollTargetIndexTarBarItemToCenter(
         _scrollableKey.currentContext.size.width / 2,
         index,
@@ -98,8 +102,10 @@ class _CustomTabBarState extends State<CustomTabBar> {
   Widget _buildSlivers() {
     var listView = _TabItemList(
       key: _tabItemListState,
-      builder: (context, index) =>
-          widget.builder(context, index, widget.pageController.page ?? 0),
+      builder: (context, index) {
+        return widget.builder(context, index, widget.pageController.page ?? 0,
+            widget.tabIndicator.controller.isIndicatorAnimPlaying, tapIndex);
+      },
       onTapTabItem: _onTapTabItem,
       itemCount: widget.itemCount,
       sizeList: sizeList,
@@ -213,4 +219,6 @@ mixin CustomTabIndicatorMixin {
     List<Size> sizeList,
     Duration duration,
   );
+
+  bool isIndicatorAnimPlaying = false;
 }

@@ -1,10 +1,35 @@
-# custom_tab_bar
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_custom_tab_bar/custom_tab_bar.dart';
+import 'package:flutter_custom_tab_bar/standard_indicator.dart';
 
-a custom tabbar
+void main() {
+  runApp(MyApp());
+}
 
-![](https://raw.githubusercontent.com/lazyee/ImageHosting/master/img/bh0im-enjiw.gif)
+class MyApp extends StatelessWidget {
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
 
-```dart
+class MyHomePage extends StatefulWidget {
+  MyHomePage({Key key, this.title}) : super(key: key);
+  final String title;
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   final int pageCount = 20;
   final PageController _controller = PageController();
@@ -95,8 +120,3 @@ class _PageItemState extends State<PageItem>
   // bool get wantKeepAlive => false;
   bool get wantKeepAlive => true;
 }
-
-
-```
-
-

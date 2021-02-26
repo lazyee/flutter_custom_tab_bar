@@ -1,13 +1,66 @@
 import 'package:flutter/material.dart';
 
-import 'flutter_custom_tab_bar.dart';
+import 'custom_tab_bar.dart';
 
-class TiebaIndicator extends CustomTabIndicator {
+class StandardTabItem extends StatefulWidget {
+  final Widget child;
+  final int currentIndex;
+  final bool isTapJumpPage;
+  final int index;
+  final double page;
+  StandardTabItem({
+    @required this.child,
+    @required this.currentIndex,
+    @required this.isTapJumpPage,
+    @required this.index,
+    @required this.page,
+    Key key,
+  }) : super(key: key);
+
+  @override
+  _StandardTabItemState createState() => _StandardTabItemState();
+}
+
+class _StandardTabItemState extends State<StandardTabItem> {
+  double scalePercent = 0;
+
+  void _calculateScalePercent() {
+    scalePercent = widget.page % 1.0;
+
+    if (widget.isTapJumpPage) {
+      scalePercent = widget.currentIndex == widget.index ? 1 : 0;
+    } else {
+      var itemIndex = widget.page.ceil();
+      if (widget.index != itemIndex) {
+        itemIndex = widget.page.floor();
+      }
+
+      if (itemIndex == widget.index) {
+        if (widget.page.floor() == itemIndex) {
+          scalePercent = 1 - scalePercent;
+        }
+      } else {
+        scalePercent = 0;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _calculateScalePercent();
+    return Transform.scale(
+      scale: 1 + (0.2 * scalePercent),
+      child: widget.child,
+    );
+  }
+}
+
+class StandardIndicator extends CustomTabIndicator {
   final double indicatorWidth;
   final Color indicatorColor;
-  final TiebaIndicatorController indicatorController;
+  final StandardIndicatorController indicatorController;
 
-  TiebaIndicator({
+  StandardIndicator({
     @required this.indicatorController,
     @required this.indicatorWidth,
     @required this.indicatorColor,
@@ -15,10 +68,10 @@ class TiebaIndicator extends CustomTabIndicator {
   }) : super(controller: indicatorController, key: key);
 
   @override
-  _TiebaIndicatorState createState() => _TiebaIndicatorState();
+  _StandardIndicatorState createState() => _StandardIndicatorState();
 }
 
-class _TiebaIndicatorState extends State<TiebaIndicator>
+class _StandardIndicatorState extends State<StandardIndicator>
     with TickerProviderStateMixin {
   double left = 0;
   double right = 0;
@@ -57,8 +110,8 @@ class _TiebaIndicatorState extends State<TiebaIndicator>
   }
 }
 
-class TiebaIndicatorController with CustomTabIndicatorMixin {
-  _TiebaIndicatorState state;
+class StandardIndicatorController with CustomTabIndicatorMixin {
+  _StandardIndicatorState state;
   double indicatorWidth = 0;
   int lastIndex = 0;
   TickerProvider tickerProvider;
@@ -174,7 +227,7 @@ class TiebaIndicatorController with CustomTabIndicatorMixin {
 
   AnimationController _animationController;
   Animation _animation;
-  var isIndicatorAnimPlaying = false;
+
   @override
   void indicatorScrollToIndex(
       int index, List<Size> sizeList, Duration duration) {
