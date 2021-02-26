@@ -2,7 +2,8 @@
 
 a custom tabbar
 
-![](https://raw.githubusercontent.com/lazyee/ImageHosting/master/img/bh0im-enjiw.gif)
+![]()
+<img src="https://raw.githubusercontent.com/lazyee/ImageHosting/master/img/bh0im-enjiw.gif" width="187" height="333">
 
 ```dart
 class _MyHomePageState extends State<MyHomePage> {
