@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 
-import 'custom_tab_bar.dart';
+import '../custom_tab_bar.dart';
+import '../tab_item_data.dart';
 
 class StandardTabItem extends StatefulWidget {
   final Widget child;
-  final int currentIndex;
-  final bool isTapJumpPage;
-  final int index;
-  final double page;
+  final TabItemData data;
   StandardTabItem({
     @required this.child,
-    @required this.currentIndex,
-    @required this.isTapJumpPage,
-    @required this.index,
-    @required this.page,
+    @required this.data,
     Key key,
   }) : super(key: key);
 
@@ -25,18 +20,19 @@ class _StandardTabItemState extends State<StandardTabItem> {
   double scalePercent = 0;
 
   void _calculateScalePercent() {
-    scalePercent = widget.page % 1.0;
+    var tabItemData = widget.data;
+    scalePercent = tabItemData.page % 1.0;
 
-    if (widget.isTapJumpPage) {
-      scalePercent = widget.currentIndex == widget.index ? 1 : 0;
+    if (tabItemData.isTapJumpPage) {
+      scalePercent = tabItemData.currentIndex == tabItemData.itemIndex ? 1 : 0;
     } else {
-      var itemIndex = widget.page.ceil();
-      if (widget.index != itemIndex) {
-        itemIndex = widget.page.floor();
+      var itemIndex = tabItemData.page.ceil();
+      if (tabItemData.itemIndex != itemIndex) {
+        itemIndex = tabItemData.page.floor();
       }
 
-      if (itemIndex == widget.index) {
-        if (widget.page.floor() == itemIndex) {
+      if (itemIndex == tabItemData.itemIndex) {
+        if (tabItemData.page.floor() == itemIndex) {
           scalePercent = 1 - scalePercent;
         }
       } else {
@@ -58,14 +54,14 @@ class _StandardTabItemState extends State<StandardTabItem> {
 class StandardIndicator extends CustomTabIndicator {
   final double indicatorWidth;
   final Color indicatorColor;
-  final StandardIndicatorController indicatorController;
+  final StandardIndicatorController controller;
 
   StandardIndicator({
-    @required this.indicatorController,
     @required this.indicatorWidth,
     @required this.indicatorColor,
+    @required this.controller,
     Key key,
-  }) : super(controller: indicatorController, key: key);
+  }) : super(controller: controller, key: key);
 
   @override
   _StandardIndicatorState createState() => _StandardIndicatorState();
@@ -79,9 +75,10 @@ class _StandardIndicatorState extends State<StandardIndicator>
   @override
   void initState() {
     super.initState();
-    widget.indicatorController.indicatorWidth = widget.indicatorWidth;
-    widget.indicatorController.state = this;
-    widget.indicatorController.tickerProvider = this;
+
+    widget.controller.indicatorWidth = widget.indicatorWidth;
+    widget.controller.state = this;
+    widget.controller.tickerProvider = this;
   }
 
   void update(double left, double right) {
@@ -89,6 +86,14 @@ class _StandardIndicatorState extends State<StandardIndicator>
       this.left = left;
       this.right = right;
     });
+  }
+
+  @override
+  void dispose() {
+    if (widget.controller != null) {
+      widget.controller.dispose();
+    }
+    super.dispose();
   }
 
   @override
@@ -116,61 +121,17 @@ class _StandardIndicatorState extends State<StandardIndicator>
 class StandardIndicatorController with CustomTabIndicatorMixin {
   _StandardIndicatorState state;
   double indicatorWidth = 0;
-  int lastIndex = 0;
   TickerProvider tickerProvider;
-
-  double getTargetItemScrollX(List<Size> sizeList, int index) {
-    double totalX = 0;
-    for (int i = 0; i <= index; i++) {
-      totalX += sizeList[i].width;
-    }
-    return totalX;
-  }
-
-  double tabsContentInsetWidth = 0;
-  double getTabsContentInsetWidth(List<Size> sizeList) {
-    if (tabsContentInsetWidth == 0) {
-      sizeList.forEach((item) {
-        tabsContentInsetWidth += item.width;
-      });
-    }
-    return tabsContentInsetWidth;
-  }
 
   double getTabIndicatorCenterX(double width) {
     return width / 2;
   }
 
   @override
-  void scrollTargetIndexTarBarItemToCenter(
-      double tabCenterX,
-      int currentIndex,
-      List<Size> sizeList,
-      ScrollController scrollController,
-      Duration duration) {
-    if (isIndicatorAnimPlaying) return;
-    if (currentIndex == lastIndex) return;
-
-    var targetItemScrollX = getTargetItemScrollX(sizeList, currentIndex);
-    var contentInsertWidth = getTabsContentInsetWidth(sizeList);
-
-    var animateToOffsetX =
-        targetItemScrollX - sizeList[currentIndex].width / 2 - tabCenterX;
-
-    if (animateToOffsetX <= 0) {
-      animateToOffsetX = 0;
-    } else if (animateToOffsetX + tabCenterX >
-        contentInsertWidth - tabCenterX) {
-      if (contentInsertWidth > tabCenterX * 2) {
-        animateToOffsetX = contentInsertWidth - tabCenterX * 2;
-      } else {
-        animateToOffsetX = 0;
-      }
+  void dispose() {
+    if (_animationController != null) {
+      _animationController.stop(canceled: true);
     }
-
-    scrollController.animateTo(animateToOffsetX,
-        duration: duration, curve: Curves.ease);
-    lastIndex = currentIndex;
   }
 
   double lastScrollProgress = 0;
@@ -193,7 +154,7 @@ class StandardIndicatorController with CustomTabIndicatorMixin {
       currentIndex = scrollProgress.toInt();
     }
 
-    double currenIndexScrollX = getTargetItemScrollX(sizeList, currentIndex);
+    double currenIndexScrollX = getTargetItemScrollEndX(sizeList, currentIndex);
     double tabContentInsert = getTabsContentInsetWidth(sizeList);
     double left = 0;
     double right = 0;
@@ -237,7 +198,7 @@ class StandardIndicatorController with CustomTabIndicatorMixin {
     isIndicatorAnimPlaying = true;
 
     double left = state.left;
-    double targetLeft = getTargetItemScrollX(sizeList, index) -
+    double targetLeft = getTargetItemScrollEndX(sizeList, index) -
         (sizeList[index].width + indicatorWidth) / 2;
 
     _animationController =
@@ -258,5 +219,10 @@ class StandardIndicatorController with CustomTabIndicatorMixin {
     });
 
     _animationController.forward();
+  }
+
+  @override
+  void updateSelectedIndex(TabItemListState state) {
+    state.notifyUpdate();
   }
 }
