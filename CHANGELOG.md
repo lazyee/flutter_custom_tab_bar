@@ -5,4 +5,6 @@ fix some bug
 add Linear,Round Indicator
 ## [0.0.4] - 2021.3.17
 fix some bug
+## [0.0.5] - 2021.3.17
+fix some bug
 

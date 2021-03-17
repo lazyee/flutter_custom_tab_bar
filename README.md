@@ -1,6 +1,5 @@
 # custom_tab_bar
 
-a custom tabbar
 ![](https://raw.githubusercontent.com/lazyee/ImageHosting/master/img/standard.gif)
 ```dart
 class _StandardTabBarPageState extends State<StandardTabBarPage> {
