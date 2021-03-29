@@ -7,4 +7,6 @@ add Linear,Round Indicator
 fix some bug
 ## [0.0.5] - 2021.3.17
 fix some bug
+## [0.0.6] - 2021.3.25
+fix some bug
 
