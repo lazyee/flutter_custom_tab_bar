@@ -9,4 +9,6 @@ fix some bug
 fix some bug
 ## [0.0.6] - 2021.3.25
 fix some bug
+## [0.0.7] - 2021.4.12
+fix some bug
 

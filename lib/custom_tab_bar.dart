@@ -58,7 +58,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
     });
 
     ///延迟一下获取具体的size
-    Future.delayed(Duration(milliseconds: 50), () {
+    Future.delayed(Duration(milliseconds: 0), () {
       widget.pageController.jumpToPage(widget.defaultPage);
       widget.tabIndicator.controller.updateScrollIndicator(
           widget.pageController.page, sizeList, animDuration);
