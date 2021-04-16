@@ -55,6 +55,7 @@ class _LinearTabBarPageState extends State<LinearTabBarPage> {
                 controller: _linearIndicatorController,
               ),
               pageController: _controller,
+              tabbarController: _linearIndicatorController,
             ),
           ),
           Expanded(

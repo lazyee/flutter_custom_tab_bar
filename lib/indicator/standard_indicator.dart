@@ -118,7 +118,7 @@ class _StandardIndicatorState extends State<StandardIndicator>
   }
 }
 
-class StandardIndicatorController with CustomTabIndicatorMixin {
+class StandardIndicatorController extends CustomTabbarController {
   _StandardIndicatorState state;
   double indicatorWidth = 0;
   TickerProvider tickerProvider;

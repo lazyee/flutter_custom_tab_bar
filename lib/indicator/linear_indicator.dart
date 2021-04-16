@@ -80,7 +80,7 @@ class _LinearIndicatorState extends State<LinearIndicator>
   }
 }
 
-class LinearIndicatorController with CustomTabIndicatorMixin {
+class LinearIndicatorController extends CustomTabbarController {
   _LinearIndicatorState state;
   TickerProvider tickerProvider;
 

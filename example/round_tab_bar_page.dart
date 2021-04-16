@@ -56,6 +56,7 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
                 controller: _roundIndicatorController,
               ),
               pageController: _controller,
+              tabbarController: _roundIndicatorController,
             ),
           ),
           Expanded(

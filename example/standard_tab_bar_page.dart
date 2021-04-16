@@ -53,6 +53,7 @@ class _StandardTabBarPageState extends State<StandardTabBarPage> {
                 controller: controller,
               ),
               pageController: _controller,
+              tabbarController: controller,
             ),
           ),
           Expanded(

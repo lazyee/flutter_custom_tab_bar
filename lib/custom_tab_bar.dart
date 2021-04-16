@@ -2,7 +2,8 @@ library flutter_custom_tab_bar;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_custom_tab_bar/tab_item_data.dart';
+
+import 'tab_item_data.dart';
 
 typedef IndexedTabItemBuilder = Widget Function(
     BuildContext context, TabItemData controller);
@@ -13,12 +14,14 @@ class CustomTabBar extends StatefulWidget {
   final int defaultPage;
   final CustomTabIndicator tabIndicator;
   final PageController pageController;
+  final CustomTabbarController tabbarController;
 
   const CustomTabBar(
       {@required this.builder,
       @required this.itemCount,
       @required this.pageController,
-      @required this.tabIndicator,
+      @required this.tabbarController,
+      this.tabIndicator,
       this.defaultPage = 0,
       Key key})
       : super(key: key);
@@ -43,25 +46,36 @@ class _CustomTabBarState extends State<CustomTabBar> {
 
     widget.pageController.addListener(() {
       _tabItemListState.currentState.updateSelectedIndex();
+      widget.tabbarController.scroll(
+          _scrollableKey.currentContext.size.width / 2,
+          sizeList,
+          _scrollController,
+          widget.pageController);
       if (widget.pageController.page % 1.0 == 0) {
         _tabItemListState.currentState.notifyUpdate();
         currentIndex = widget.pageController.page.toInt();
-        widget.tabIndicator.controller.scrollTargetIndexTarBarItemToCenter(
-            _scrollableKey.currentContext.size.width / 2,
-            currentIndex,
-            sizeList,
-            _scrollController,
-            tabBarScrollDuration);
+
+        // widget.tabbarController.scrollTargetIndexTarBarItemToCenter(
+        //     _scrollableKey.currentContext.size.width / 2,
+        //     currentIndex,
+        //     sizeList,
+        //     _scrollController,
+        //     tabBarScrollDuration);
       }
-      widget.tabIndicator.controller.updateScrollIndicator(
-          widget.pageController.page, sizeList, animDuration);
+      if (widget.tabIndicator != null) {
+        widget.tabIndicator.controller.updateScrollIndicator(
+            widget.pageController.page, sizeList, animDuration);
+      }
     });
 
     ///延迟一下获取具体的size
     Future.delayed(Duration(milliseconds: 0), () {
       widget.pageController.jumpToPage(widget.defaultPage);
-      widget.tabIndicator.controller.updateScrollIndicator(
-          widget.pageController.page, sizeList, animDuration);
+
+      if (widget.tabIndicator != null) {
+        widget.tabIndicator.controller.updateScrollIndicator(
+            widget.pageController.page, sizeList, animDuration);
+      }
     });
   }
 
@@ -86,15 +100,18 @@ class _CustomTabBarState extends State<CustomTabBar> {
 
   void _onTapTabItem(int index) {
     currentIndex = index;
-    widget.tabIndicator.controller.scrollTargetIndexTarBarItemToCenter(
+
+    widget.tabbarController.scrollTargetIndexTarBarItemToCenter(
         _scrollableKey.currentContext.size.width / 2,
         index,
         sizeList,
         _scrollController,
         tabBarScrollDuration);
 
-    widget.tabIndicator.controller
-        .indicatorScrollToIndex(index, sizeList, animDuration);
+    if (widget.tabIndicator != null) {
+      widget.tabIndicator.controller
+          .indicatorScrollToIndex(index, sizeList, animDuration);
+    }
 
     widget.pageController
         .animateToPage(index, duration: animDuration, curve: Curves.ease);
@@ -103,16 +120,14 @@ class _CustomTabBarState extends State<CustomTabBar> {
   Widget _buildSlivers() {
     var listView = TabItemList(
       key: _tabItemListState,
-      controller: widget.tabIndicator.controller,
+      controller: widget.tabbarController,
       builder: (context, index) {
-        var controller = TabItemData.create(
+        var tabItemData = TabItemData.create(
             itemIndex: index,
             currentIndex: currentIndex,
-            isTapJumpPage:
-                widget.tabIndicator.controller.isIndicatorAnimPlaying,
+            isTapJumpPage: widget.tabbarController.isIndicatorAnimPlaying,
             page: widget.pageController.page ?? 0);
-
-        return widget.builder(context, controller);
+        return widget.builder(context, tabItemData);
       },
       onTapTabItem: _onTapTabItem,
       itemCount: widget.itemCount,
@@ -121,7 +136,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
 
     var child = Stack(
       children: [
-        widget.tabIndicator,
+        if (widget.tabIndicator != null) widget.tabIndicator,
         listView,
       ],
     );
@@ -134,7 +149,7 @@ class TabItemList extends StatefulWidget {
   final IndexedWidgetBuilder builder;
   final List<Size> sizeList;
   final void Function(int index) onTapTabItem;
-  final CustomTabIndicatorMixin controller;
+  final CustomTabbarController controller;
   TabItemList(
       {@required this.itemCount,
       @required this.builder,
@@ -209,15 +224,40 @@ class _TabRenderObj extends RenderConstrainedBox {
 }
 
 class CustomTabIndicator extends StatefulWidget {
-  final CustomTabIndicatorMixin controller;
+  final CustomTabbarController controller;
   CustomTabIndicator({@required this.controller, Key key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => null;
 }
 
-mixin CustomTabIndicatorMixin {
+abstract class CustomTabbarController {
   void updateSelectedIndex(TabItemListState state);
+
+  ///根据pageController来设置便宜量
+  void scroll(double tabCenterX, List<Size> sizeList,
+      ScrollController scrollController, PageController pageController) {
+    var index = pageController.page.ceil();
+    var preIndex = pageController.page.floor();
+    var offsetPercent = pageController.page % 1;
+    var total = sizeList[index].width / 2 + sizeList[preIndex].width / 2;
+
+    var endX = getTargetItemScrollStartX(sizeList, preIndex) +
+        sizeList[preIndex].width / 2;
+    var offsetX = 0.0;
+    var contentInsertWidth = getTabsContentInsetWidth(sizeList);
+    if (endX + total > tabCenterX) {
+      if (endX > tabCenterX) {
+        offsetX = endX - tabCenterX + offsetPercent * (total);
+      } else {
+        offsetX = offsetPercent * (total + endX - tabCenterX);
+      }
+
+      if (contentInsertWidth - offsetX - tabCenterX > tabCenterX) {
+        scrollController.jumpTo(offsetX);
+      }
+    }
+  }
 
   int lastIndex = 0;
 

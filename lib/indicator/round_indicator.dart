@@ -91,7 +91,7 @@ class _RoundIndicatorState extends State<RoundIndicator>
   }
 }
 
-class RoundIndicatorController with CustomTabIndicatorMixin {
+class RoundIndicatorController extends CustomTabbarController {
   _RoundIndicatorState state;
   TickerProvider tickerProvider;
 
