@@ -100,7 +100,6 @@ class _CustomTabBarState extends State<CustomTabBar> {
 
   void _onTapTabItem(int index) {
     currentIndex = index;
-
     widget.tabbarController.scrollTargetIndexTarBarItemToCenter(
         _scrollableKey.currentContext.size.width / 2,
         index,
@@ -234,9 +233,10 @@ class CustomTabIndicator extends StatefulWidget {
 abstract class CustomTabbarController {
   void updateSelectedIndex(TabItemListState state);
 
-  ///根据pageController来设置便宜量
+  ///根据pageController来设置偏移量
   void scroll(double tabCenterX, List<Size> sizeList,
       ScrollController scrollController, PageController pageController) {
+    if (isIndicatorAnimPlaying) return;
     var index = pageController.page.ceil();
     var preIndex = pageController.page.floor();
     var offsetPercent = pageController.page % 1;
