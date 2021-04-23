@@ -1,27 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../custom_tab_bar.dart';
-import '../tab_item_data.dart';
-
-class RoundTabItem extends StatefulWidget {
-  final Widget child;
-  final TabItemData data;
-  RoundTabItem({
-    @required this.child,
-    @required this.data,
-    Key key,
-  }) : super(key: key);
-
-  @override
-  _RoundTabItemState createState() => _RoundTabItemState();
-}
-
-class _RoundTabItemState extends State<RoundTabItem> {
-  @override
-  Widget build(BuildContext context) {
-    return widget.child;
-  }
-}
+import '../tab_bar_item_info.dart';
+import '../tab_bar_item_row.dart';
 
 class RoundIndicator extends CustomTabIndicator {
   final Color indicatorColor;
@@ -101,9 +82,9 @@ class RoundIndicatorController extends CustomTabbarController {
 
   double lastScrollProgress = 0;
   @override
-  void updateScrollIndicator(
-      double scrollProgress, List<Size> sizeList, Duration duration) {
-    if (isIndicatorAnimPlaying) return;
+  void updateScrollIndicator(double scrollProgress,
+      List<TabBarItemInfo> tabbarItemInfoList, Duration duration) {
+    if (isJumpPage) return;
 
     double percent = scrollProgress % 1.0;
 
@@ -121,19 +102,20 @@ class RoundIndicatorController extends CustomTabbarController {
     }
 
     //当前Item在layout中的X坐标
-    double currenIndexScrollX = getTargetItemScrollEndX(sizeList, currentIndex);
+    double currenIndexScrollX =
+        getTargetItemScrollEndX(tabbarItemInfoList, currentIndex);
     //所有内容的宽度
-    double tabContentInsert = getTabsContentInsetWidth(sizeList);
+    double tabContentInsert = getTabsContentInsetWidth(tabbarItemInfoList);
     double left = 0;
     double right = 0;
 
     //当前Item的宽度
-    double currentIndexWidth = sizeList[currentIndex].width;
+    double currentIndexWidth = tabbarItemInfoList[currentIndex].size.width;
 
     //获取下一个Item的宽度
     double nextIndexWidth = 0;
-    if (currentIndex < sizeList.length - 1) {
-      nextIndexWidth = sizeList[currentIndex + 1].width;
+    if (currentIndex < tabbarItemInfoList.length - 1) {
+      nextIndexWidth = tabbarItemInfoList[currentIndex + 1].size.width;
     } else {
       return;
     }
@@ -157,13 +139,11 @@ class RoundIndicatorController extends CustomTabbarController {
 
   @override
   void indicatorScrollToIndex(
-      int index, List<Size> sizeList, Duration duration) {
-    isIndicatorAnimPlaying = true;
-
+      int index, List<TabBarItemInfo> tabbarItemInfoList, Duration duration) {
     double left = state.left;
     double right = state.right;
-    double width = getTabsContentInsetWidth(sizeList) - right - left;
-    double targetLeft = getTargetItemScrollStartX(sizeList, index);
+    double width = getTabsContentInsetWidth(tabbarItemInfoList) - right - left;
+    double targetLeft = getTargetItemScrollStartX(tabbarItemInfoList, index);
     if (targetLeft == left) return;
 
     _animationController =
@@ -177,28 +157,23 @@ class RoundIndicatorController extends CustomTabbarController {
       double targetRight = 0;
       if (left > targetLeft) {
         rate = 1 - (targetLeft - _animation.value) / (targetLeft - left);
-        targetRight = getTabsContentInsetWidth(sizeList) -
+        targetRight = getTabsContentInsetWidth(tabbarItemInfoList) -
             _animation.value -
             width -
-            (sizeList[index].width - width) * rate;
+            (tabbarItemInfoList[index].size.width - width) * rate;
       } else {
         rate = (_animation.value - left) / (targetLeft - left);
-        targetRight = getTabsContentInsetWidth(sizeList) -
+        targetRight = getTabsContentInsetWidth(tabbarItemInfoList) -
             _animation.value -
             width -
-            (sizeList[index].width - width) * rate;
+            (tabbarItemInfoList[index].size.width - width) * rate;
       }
       state.update(_animation.value, targetRight);
-    });
-    _animationController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        isIndicatorAnimPlaying = false;
-      }
     });
 
     _animationController.forward();
   }
 
   @override
-  void updateSelectedIndex(TabItemListState state) {}
+  void updateSelectedIndex(TabBarItemRowState state) {}
 }

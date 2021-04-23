@@ -1,55 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../custom_tab_bar.dart';
-import '../tab_item_data.dart';
-
-class StandardTabItem extends StatefulWidget {
-  final Widget child;
-  final TabItemData data;
-  StandardTabItem({
-    @required this.child,
-    @required this.data,
-    Key key,
-  }) : super(key: key);
-
-  @override
-  _StandardTabItemState createState() => _StandardTabItemState();
-}
-
-class _StandardTabItemState extends State<StandardTabItem> {
-  double scalePercent = 0;
-
-  void _calculateScalePercent() {
-    var tabItemData = widget.data;
-    scalePercent = tabItemData.page % 1.0;
-
-    if (tabItemData.isTapJumpPage) {
-      scalePercent = tabItemData.currentIndex == tabItemData.itemIndex ? 1 : 0;
-    } else {
-      var itemIndex = tabItemData.page.ceil();
-      if (tabItemData.itemIndex != itemIndex) {
-        itemIndex = tabItemData.page.floor();
-      }
-
-      if (itemIndex == tabItemData.itemIndex) {
-        if (tabItemData.page.floor() == itemIndex) {
-          scalePercent = 1 - scalePercent;
-        }
-      } else {
-        scalePercent = 0;
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    _calculateScalePercent();
-    return Transform.scale(
-      scale: 1 + (0.2 * scalePercent),
-      child: widget.child,
-    );
-  }
-}
+import '../tab_bar_item_info.dart';
+import '../tab_bar_item_row.dart';
 
 class StandardIndicator extends CustomTabIndicator {
   final double indicatorWidth;
@@ -136,9 +89,9 @@ class StandardIndicatorController extends CustomTabbarController {
 
   double lastScrollProgress = 0;
   @override
-  void updateScrollIndicator(
-      double scrollProgress, List<Size> sizeList, Duration duration) {
-    if (isIndicatorAnimPlaying) return;
+  void updateScrollIndicator(double scrollProgress,
+      List<TabBarItemInfo> tabbarItemInfoList, Duration duration) {
+    if (isJumpPage) return;
     double percent = scrollProgress % 1.0;
 
     ///确定当前索引值位置
@@ -154,15 +107,16 @@ class StandardIndicatorController extends CustomTabbarController {
       currentIndex = scrollProgress.toInt();
     }
 
-    double currenIndexScrollX = getTargetItemScrollEndX(sizeList, currentIndex);
-    double tabContentInsert = getTabsContentInsetWidth(sizeList);
+    double currenIndexScrollX =
+        getTargetItemScrollEndX(tabbarItemInfoList, currentIndex);
+    double tabContentInsert = getTabsContentInsetWidth(tabbarItemInfoList);
     double left = 0;
     double right = 0;
 
-    double currentIndexWidth = sizeList[currentIndex].width;
+    double currentIndexWidth = tabbarItemInfoList[currentIndex].size.width;
     double nextIndexWidth = 0;
-    if (currentIndex < sizeList.length - 1) {
-      nextIndexWidth = sizeList[currentIndex + 1].width;
+    if (currentIndex < tabbarItemInfoList.length - 1) {
+      nextIndexWidth = tabbarItemInfoList[currentIndex + 1].size.width;
     } else {
       return;
     }
@@ -194,12 +148,10 @@ class StandardIndicatorController extends CustomTabbarController {
 
   @override
   void indicatorScrollToIndex(
-      int index, List<Size> sizeList, Duration duration) {
-    isIndicatorAnimPlaying = true;
-
+      int index, List<TabBarItemInfo> tabbarItemInfoList, Duration duration) {
     double left = state.left;
-    double targetLeft = getTargetItemScrollEndX(sizeList, index) -
-        (sizeList[index].width + indicatorWidth) / 2;
+    double targetLeft = getTargetItemScrollEndX(tabbarItemInfoList, index) -
+        (tabbarItemInfoList[index].size.width + indicatorWidth) / 2;
 
     _animationController =
         AnimationController(duration: duration, vsync: tickerProvider);
@@ -207,22 +159,17 @@ class StandardIndicatorController extends CustomTabbarController {
     _animation =
         Tween(begin: left, end: targetLeft).animate(_animationController);
     _animation.addListener(() {
-      double right = getTabsContentInsetWidth(sizeList) -
+      double right = getTabsContentInsetWidth(tabbarItemInfoList) -
           _animation.value -
           indicatorWidth;
       state.update(_animation.value, right);
-    });
-    _animationController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        isIndicatorAnimPlaying = false;
-      }
     });
 
     _animationController.forward();
   }
 
   @override
-  void updateSelectedIndex(TabItemListState state) {
-    state.notifyUpdate();
+  void updateSelectedIndex(TabBarItemRowState state) {
+    state.notifyUpdate(0.0);
   }
 }
