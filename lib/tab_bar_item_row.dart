@@ -6,6 +6,7 @@ import 'tab_bar_item_info.dart';
 
 class TabBarItemRow extends StatefulWidget {
   final int itemCount;
+
   final IndexedWidgetBuilder builder;
   final List<TabBarItemInfo> tabbarItemInfoList;
   final void Function(int index) onTapTabItem;

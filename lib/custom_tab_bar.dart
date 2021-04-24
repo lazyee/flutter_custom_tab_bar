@@ -20,6 +20,8 @@ class CustomTabBar extends StatefulWidget {
   final EdgeInsets padding;
   final double height;
   final double width;
+  final Alignment alignment;
+  final ScrollPhysics physics;
 
   const CustomTabBar(
       {@required this.builder,
@@ -32,6 +34,8 @@ class CustomTabBar extends StatefulWidget {
       this.defaultPage = 0,
       this.width,
       this.height = 35,
+      this.alignment = Alignment.center,
+      this.physics = const AlwaysScrollableScrollPhysics(),
       Key key})
       : super(key: key);
 
@@ -83,17 +87,19 @@ class _CustomTabBarState extends State<CustomTabBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        width: widget.width,
+        alignment: widget.alignment,
         height: widget.height,
         padding: widget.padding ?? EdgeInsets.all(0.0),
         decoration: BoxDecoration(color: widget.backgroundColor),
-        child: Scrollable(
-          key: _scrollableKey,
-          controller: _scrollController,
-          viewportBuilder: _buildViewport,
-          axisDirection: AxisDirection.right,
-          physics: AlwaysScrollableScrollPhysics(),
-        ));
+        child: Container(
+            width: widget.width,
+            child: Scrollable(
+              key: _scrollableKey,
+              controller: _scrollController,
+              viewportBuilder: _buildViewport,
+              axisDirection: AxisDirection.right,
+              physics: widget.physics,
+            )));
   }
 
   Widget _buildViewport(BuildContext context, ViewportOffset offset) {

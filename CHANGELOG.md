@@ -20,4 +20,6 @@ fixed some bug
 fixed some bug
 ## [0.0.11] - 2021.4.24
 fixed some bug
+## [0.0.12] - 2021.4.24
+fixed some bug
 
