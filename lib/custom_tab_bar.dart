@@ -197,7 +197,7 @@ abstract class CustomTabbarController {
       if (startX < tabCenterX) {
         scrollController.jumpTo(0);
       } else {
-        scrollController.jumpTo(contentInsertWidth - tabCenterX * 2);
+        scrollController.jumpTo(startX - tabCenterX);
       }
     }
   }
