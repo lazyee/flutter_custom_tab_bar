@@ -74,20 +74,16 @@ class _CustomTabBarState extends State<CustomTabBar> {
           _scrollController, widget.pageController);
       _tabItemListState.currentState!.notifyUpdate(getControllerPage);
       currentIndex = getControllerPage.toInt();
-      if (widget.indicator != null) {
-        widget.indicator!.controller.updateScrollIndicator(
-            getControllerPage, tabBarItemInfoList, animDuration);
-      }
+
+      widget.indicator?.controller.updateScrollIndicator(
+          getControllerPage, tabBarItemInfoList, animDuration);
     });
 
     ///延迟一下获取具体的size
     Future.delayed(Duration(milliseconds: 0), () {
       widget.pageController.jumpToPage(widget.defaultPage);
-
-      if (widget.indicator != null) {
-        widget.indicator!.controller.updateScrollIndicator(
-            getControllerPage, tabBarItemInfoList, animDuration);
-      }
+      widget.indicator?.controller.updateScrollIndicator(
+          getControllerPage, tabBarItemInfoList, animDuration);
     });
   }
 
