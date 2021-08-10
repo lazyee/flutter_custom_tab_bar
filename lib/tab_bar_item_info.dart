@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 class TabBarItemInfo {
-  int currentIndex;
-  Size size;
-  bool isJumpPage;
-  int jumpPageIndex;
-  int itemIndex;
-  double page;
+  int? currentIndex;
+  Size? size;
+  bool? isJumpPage;
+  int? jumpPageIndex;
+  int? itemIndex;
+  double? page;
 
   TabBarItemInfo.create({
     this.itemIndex,

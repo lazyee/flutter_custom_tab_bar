@@ -10,10 +10,10 @@ class StandardIndicator extends CustomTabIndicator {
   final StandardIndicatorController controller;
 
   StandardIndicator({
-    @required this.indicatorWidth,
-    @required this.indicatorColor,
-    @required this.controller,
-    Key key,
+    required this.indicatorWidth,
+    required this.indicatorColor,
+    required this.controller,
+    Key? key,
   }) : super(controller: controller, key: key);
 
   @override
@@ -43,9 +43,7 @@ class _StandardIndicatorState extends State<StandardIndicator>
 
   @override
   void dispose() {
-    if (widget.controller != null) {
-      widget.controller.dispose();
-    }
+    widget.controller.dispose();
     super.dispose();
   }
 
@@ -71,10 +69,10 @@ class _StandardIndicatorState extends State<StandardIndicator>
   }
 }
 
-class StandardIndicatorController extends CustomTabbarController {
-  _StandardIndicatorState state;
+class StandardIndicatorController extends CustomTabBarController {
+  late _StandardIndicatorState state;
   double indicatorWidth = 0;
-  TickerProvider tickerProvider;
+  late TickerProvider tickerProvider;
 
   double getTabIndicatorCenterX(double width) {
     return width / 2;
@@ -83,24 +81,24 @@ class StandardIndicatorController extends CustomTabbarController {
   @override
   void dispose() {
     if (_animationController != null) {
-      _animationController.stop(canceled: true);
+      _animationController!.stop(canceled: true);
     }
   }
 
-  double lastScrollProgress = 0;
+  double? lastScrollProgress = 0;
   @override
-  void updateScrollIndicator(double scrollProgress,
-      List<TabBarItemInfo> tabbarItemInfoList, Duration duration) {
+  void updateScrollIndicator(double? scrollProgress,
+      List<TabBarItemInfo>? tabbarItemInfoList, Duration duration) {
     if (isJumpPage) return;
-    double percent = scrollProgress % 1.0;
+    double percent = scrollProgress! % 1.0;
 
     ///确定当前索引值位置
     int currentIndex = 0;
-    if (scrollProgress > lastScrollProgress) {
-      if (scrollProgress.toInt() > lastScrollProgress.toInt()) {
+    if (scrollProgress > lastScrollProgress!) {
+      if (scrollProgress.toInt() > lastScrollProgress!.toInt()) {
         currentIndex = scrollProgress.toInt();
       } else {
-        currentIndex = lastScrollProgress.toInt();
+        currentIndex = lastScrollProgress!.toInt();
         percent = percent == 0 ? 1 : percent;
       }
     } else {
@@ -113,10 +111,10 @@ class StandardIndicatorController extends CustomTabbarController {
     double left = 0;
     double right = 0;
 
-    double currentIndexWidth = tabbarItemInfoList[currentIndex].size.width;
+    double currentIndexWidth = tabbarItemInfoList![currentIndex].size!.width;
     double nextIndexWidth = 0;
     if (currentIndex < tabbarItemInfoList.length - 1) {
-      nextIndexWidth = tabbarItemInfoList[currentIndex + 1].size.width;
+      nextIndexWidth = tabbarItemInfoList[currentIndex + 1].size!.width;
     } else {
       return;
     }
@@ -143,21 +141,21 @@ class StandardIndicatorController extends CustomTabbarController {
     state.update(left, right);
   }
 
-  AnimationController _animationController;
-  Animation _animation;
+  AnimationController? _animationController;
+  late Animation _animation;
 
   @override
   void indicatorScrollToIndex(
-      int index, List<TabBarItemInfo> tabbarItemInfoList, Duration duration) {
+      int index, List<TabBarItemInfo>? tabbarItemInfoList, Duration duration) {
     double left = state.left;
     double targetLeft = getTargetItemScrollEndX(tabbarItemInfoList, index) -
-        (tabbarItemInfoList[index].size.width + indicatorWidth) / 2;
+        (tabbarItemInfoList![index].size!.width + indicatorWidth) / 2;
 
     _animationController =
         AnimationController(duration: duration, vsync: tickerProvider);
 
     _animation =
-        Tween(begin: left, end: targetLeft).animate(_animationController);
+        Tween(begin: left, end: targetLeft).animate(_animationController!);
     _animation.addListener(() {
       double right = getTabsContentInsetWidth(tabbarItemInfoList) -
           _animation.value -
@@ -165,7 +163,7 @@ class StandardIndicatorController extends CustomTabbarController {
       state.update(_animation.value, right);
     });
 
-    _animationController.forward();
+    _animationController!.forward();
   }
 
   @override

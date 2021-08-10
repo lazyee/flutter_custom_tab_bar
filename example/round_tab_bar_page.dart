@@ -9,7 +9,7 @@ import 'package:flutter_custom_tab_bar/tab_bar_item_info.dart';
 import 'page_item.dart';
 
 class RoundTabBarPage extends StatefulWidget {
-  RoundTabBarPage({Key key}) : super(key: key);
+  RoundTabBarPage({Key? key}) : super(key: key);
 
   @override
   _RoundTabBarPageState createState() => _RoundTabBarPageState();
@@ -62,7 +62,7 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
                 controller: _roundIndicatorController,
               ),
               pageController: _controller,
-              tabbarController: _roundIndicatorController,
+              controller: _roundIndicatorController,
             ),
           ),
           Expanded(

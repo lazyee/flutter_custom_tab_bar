@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class PageItem extends StatefulWidget {
   final int index;
-  PageItem(this.index, {Key key}) : super(key: key);
+  PageItem(this.index, {Key? key}) : super(key: key);
 
   @override
   _PageItemState createState() => _PageItemState();

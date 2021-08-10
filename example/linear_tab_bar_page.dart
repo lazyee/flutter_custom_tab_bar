@@ -9,7 +9,7 @@ import 'package:flutter_custom_tab_bar/tab_bar_item_info.dart';
 import 'page_item.dart';
 
 class LinearTabBarPage extends StatefulWidget {
-  LinearTabBarPage({Key key}) : super(key: key);
+  LinearTabBarPage({Key? key}) : super(key: key);
 
   @override
   _LinearTabBarPageState createState() => _LinearTabBarPageState();
@@ -60,7 +60,7 @@ class _LinearTabBarPageState extends State<LinearTabBarPage> {
                 controller: _linearIndicatorController,
               ),
               pageController: _controller,
-              tabbarController: _linearIndicatorController,
+              controller: _linearIndicatorController,
             ),
           ),
           Expanded(

@@ -8,9 +8,9 @@ class LinearIndicator extends CustomTabIndicator {
   final Color indicatorColor;
   final LinearIndicatorController controller;
   LinearIndicator({
-    @required this.indicatorColor,
-    @required this.controller,
-    Key key,
+    required this.indicatorColor,
+    required this.controller,
+    Key? key,
   }) : super(controller: LinearIndicatorController(), key: key);
 
   @override
@@ -37,9 +37,7 @@ class _LinearIndicatorState extends State<LinearIndicator>
 
   @override
   void dispose() {
-    if (widget.controller != null) {
-      widget.controller.dispose();
-    }
+    widget.controller.dispose();
     super.dispose();
   }
 
@@ -61,29 +59,29 @@ class _LinearIndicatorState extends State<LinearIndicator>
   }
 }
 
-class LinearIndicatorController extends CustomTabbarController {
-  _LinearIndicatorState state;
-  TickerProvider tickerProvider;
+class LinearIndicatorController extends CustomTabBarController {
+  late _LinearIndicatorState state;
+  late TickerProvider tickerProvider;
 
   double getTabIndicatorCenterX(double width) {
     return width / 2;
   }
 
-  double lastScrollProgress = 0;
+  double? lastScrollProgress = 0;
   @override
-  void updateScrollIndicator(double scrollProgress,
-      List<TabBarItemInfo> tabbarItemInfoList, Duration duration) {
+  void updateScrollIndicator(double? scrollProgress,
+      List<TabBarItemInfo>? tabbarItemInfoList, Duration duration) {
     if (isJumpPage) return;
 
-    double percent = scrollProgress % 1.0;
+    double percent = scrollProgress! % 1.0;
 
     ///确定当前索引值位置
     int currentIndex = 0;
-    if (scrollProgress > lastScrollProgress) {
-      if (scrollProgress.toInt() > lastScrollProgress.toInt()) {
+    if (scrollProgress > lastScrollProgress!) {
+      if (scrollProgress.toInt() > lastScrollProgress!.toInt()) {
         currentIndex = scrollProgress.toInt();
       } else {
-        currentIndex = lastScrollProgress.toInt();
+        currentIndex = lastScrollProgress!.toInt();
         percent = percent == 0 ? 1 : percent;
       }
     } else {
@@ -99,12 +97,12 @@ class LinearIndicatorController extends CustomTabbarController {
     double right = 0;
 
     //当前Item的宽度
-    double currentIndexWidth = tabbarItemInfoList[currentIndex].size.width;
+    double currentIndexWidth = tabbarItemInfoList![currentIndex].size!.width;
 
     //获取下一个Item的宽度
     double nextIndexWidth = 0;
     if (currentIndex < tabbarItemInfoList.length - 1) {
-      nextIndexWidth = tabbarItemInfoList[currentIndex + 1].size.width;
+      nextIndexWidth = tabbarItemInfoList[currentIndex + 1].size!.width;
     } else {
       return;
     }
@@ -116,19 +114,19 @@ class LinearIndicatorController extends CustomTabbarController {
     state.update(left, right);
   }
 
-  AnimationController _animationController;
-  Animation _animation;
+  AnimationController? _animationController;
+  late Animation _animation;
 
   @override
   void dispose() {
     if (_animationController != null) {
-      _animationController.stop(canceled: true);
+      _animationController!.stop(canceled: true);
     }
   }
 
   @override
   void indicatorScrollToIndex(
-      int index, List<TabBarItemInfo> tabbarItemInfoList, Duration duration) {
+      int index, List<TabBarItemInfo>? tabbarItemInfoList, Duration duration) {
     // isJumpPage = true;
 
     double left = state.left;
@@ -141,33 +139,33 @@ class LinearIndicatorController extends CustomTabbarController {
         AnimationController(duration: duration, vsync: tickerProvider);
 
     _animation =
-        Tween(begin: left, end: targetLeft).animate(_animationController);
+        Tween(begin: left, end: targetLeft).animate(_animationController!);
 
     _animation.addListener(() {
-      double rate = 0;
+      double? rate = 0;
       double targetRight = 0;
       if (left > targetLeft) {
         rate = 1 - (targetLeft - _animation.value) / (targetLeft - left);
         targetRight = getTabsContentInsetWidth(tabbarItemInfoList) -
             _animation.value -
             width -
-            (tabbarItemInfoList[index].size.width - width) * rate;
+            (tabbarItemInfoList![index].size!.width - width) * rate;
       } else {
         rate = (_animation.value - left) / (targetLeft - left);
         targetRight = getTabsContentInsetWidth(tabbarItemInfoList) -
             _animation.value -
             width -
-            (tabbarItemInfoList[index].size.width - width) * rate;
+            (tabbarItemInfoList![index].size!.width - width) * rate!;
       }
       state.update(_animation.value, targetRight);
     });
-    _animationController.addStatusListener((status) {
+    _animationController!.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         isJumpPage = false;
       }
     });
 
-    _animationController.forward();
+    _animationController!.forward();
   }
 
   @override

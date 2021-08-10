@@ -13,39 +13,40 @@ class CustomTabBar extends StatefulWidget {
   final IndexedTabItemBuilder builder;
   final int itemCount;
   final int defaultPage;
-  final CustomTabIndicator indicator;
+  final CustomTabIndicator? indicator;
   final PageController pageController;
-  final CustomTabbarController tabbarController;
+  final CustomTabBarController controller;
   final Color backgroundColor;
-  final EdgeInsets padding;
-  final double height;
-  final double width;
+
+  final double? height;
+  final double? width;
   final Alignment alignment;
   final ScrollPhysics physics;
 
   const CustomTabBar(
-      {@required this.builder,
-      @required this.itemCount,
-      @required this.pageController,
-      @required this.tabbarController,
+      {required this.builder,
+      required this.itemCount,
+      required this.pageController,
+      required this.controller,
       this.indicator,
       this.backgroundColor = Colors.transparent,
-      this.padding,
       this.defaultPage = 0,
       this.width,
-      this.height = 35,
+      this.height,
       this.alignment = Alignment.center,
       this.physics = const AlwaysScrollableScrollPhysics(),
-      Key key})
-      : super(key: key);
+      Key? key})
+      : assert((physics is NeverScrollableScrollPhysics && height == null) ||
+            !(physics is NeverScrollableScrollPhysics) && height != null),
+        super(key: key);
 
   @override
   _CustomTabBarState createState() => _CustomTabBarState();
 }
 
 class _CustomTabBarState extends State<CustomTabBar> {
-  List<TabBarItemInfo> tabbarItemInfoList;
-  ScrollController _scrollController = ScrollController();
+  late List<TabBarItemInfo> tabBarItemInfoList;
+  ScrollController? _scrollController;
   GlobalKey _scrollableKey = GlobalKey();
   GlobalKey<TabBarItemRowState> _tabItemListState =
       GlobalKey<TabBarItemRowState>();
@@ -53,23 +54,29 @@ class _CustomTabBarState extends State<CustomTabBar> {
   final Duration tabBarScrollDuration = Duration(milliseconds: 300);
   int currentIndex = 0;
 
+  double get getControllerPage => widget.pageController.positions.isNotEmpty
+      ? widget.pageController.page ?? 0
+      : 0;
   @override
   void initState() {
     super.initState();
-    tabbarItemInfoList = List(widget.itemCount);
+
+    if (!(widget.physics is NeverScrollableScrollPhysics)) {
+      _scrollController = ScrollController();
+    }
+
+    tabBarItemInfoList =
+        List.generate(widget.itemCount, (i) => TabBarItemInfo.create());
 
     widget.pageController.addListener(() {
-      _tabItemListState.currentState.updateSelectedIndex();
-      widget.tabbarController.scroll(
-          _scrollableKey.currentContext.size.width / 2,
-          tabbarItemInfoList,
-          _scrollController,
-          widget.pageController);
-      _tabItemListState.currentState.notifyUpdate(widget.pageController.page);
-      currentIndex = widget.pageController.page.toInt();
+      _tabItemListState.currentState!.updateSelectedIndex();
+      widget.controller.scroll(getViewportWidth() / 2, tabBarItemInfoList,
+          _scrollController, widget.pageController);
+      _tabItemListState.currentState!.notifyUpdate(getControllerPage);
+      currentIndex = getControllerPage.toInt();
       if (widget.indicator != null) {
-        widget.indicator.controller.updateScrollIndicator(
-            widget.pageController.page, tabbarItemInfoList, animDuration);
+        widget.indicator!.controller.updateScrollIndicator(
+            getControllerPage, tabBarItemInfoList, animDuration);
       }
     });
 
@@ -78,28 +85,45 @@ class _CustomTabBarState extends State<CustomTabBar> {
       widget.pageController.jumpToPage(widget.defaultPage);
 
       if (widget.indicator != null) {
-        widget.indicator.controller.updateScrollIndicator(
-            widget.pageController.page, tabbarItemInfoList, animDuration);
+        widget.indicator!.controller.updateScrollIndicator(
+            getControllerPage, tabBarItemInfoList, animDuration);
       }
     });
+  }
+
+  double getViewportWidth() {
+    if (widget.physics is NeverScrollableScrollPhysics) {
+      return widget.width ?? MediaQuery.of(context).size.width;
+    }
+    if (_scrollableKey.currentContext == null) {
+      return MediaQuery.of(context).size.width;
+    }
+    return _scrollableKey.currentContext!.size!.width;
+  }
+
+  double? getViewportHeight() {
+    if (widget.physics is NeverScrollableScrollPhysics) {
+      return null;
+    }
+    return widget.height;
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
         alignment: widget.alignment,
-        height: widget.height,
-        padding: widget.padding ?? EdgeInsets.all(0.0),
+        height: getViewportHeight(),
+        width: getViewportWidth(),
         decoration: BoxDecoration(color: widget.backgroundColor),
-        child: Container(
-            width: widget.width,
-            child: Scrollable(
-              key: _scrollableKey,
-              controller: _scrollController,
-              viewportBuilder: _buildViewport,
-              axisDirection: AxisDirection.right,
-              physics: widget.physics,
-            )));
+        child: widget.physics is NeverScrollableScrollPhysics
+            ? _buildTabBarItemRow()
+            : Scrollable(
+                key: _scrollableKey,
+                controller: _scrollController,
+                viewportBuilder: _buildViewport,
+                axisDirection: AxisDirection.right,
+                physics: widget.physics,
+              ));
   }
 
   Widget _buildViewport(BuildContext context, ViewportOffset offset) {
@@ -111,79 +135,78 @@ class _CustomTabBarState extends State<CustomTabBar> {
   }
 
   ///点击tabbar Item
-  void _onTapTabbarItem(int index) {
-    if (widget.tabbarController.isJumpPage) return;
-    tabbarItemInfoList.forEach((element) {
+  void _onTapItem(int index) {
+    if (widget.controller.isJumpPage) return;
+    tabBarItemInfoList.forEach((element) {
       element.jumpPageIndex = index;
     });
-    widget.tabbarController.scrollTargetIndexTarBarItemToCenter(
-        _scrollableKey.currentContext.size.width / 2,
+    widget.controller.scrollTargetIndexTarBarItemToCenter(
+        getViewportWidth() / 2,
         index,
-        tabbarItemInfoList,
+        tabBarItemInfoList,
         _scrollController,
         tabBarScrollDuration);
 
     if (widget.indicator != null) {
-      widget.indicator.controller
-          .indicatorScrollToIndex(index, tabbarItemInfoList, animDuration);
+      widget.indicator!.controller
+          .indicatorScrollToIndex(index, tabBarItemInfoList, animDuration);
     }
 
     widget.pageController
         .animateToPage(index, duration: animDuration, curve: Curves.ease);
   }
 
-  Widget _buildSlivers() {
-    var listView = TabBarItemRow(
-      key: _tabItemListState,
-      controller: widget.tabbarController,
-      builder: (context, index) {
-        if (tabbarItemInfoList[index] == null) {
-          tabbarItemInfoList[index] = TabBarItemInfo.create();
-        }
-        tabbarItemInfoList[index]
-          ..currentIndex = currentIndex
-          ..isJumpPage = widget.tabbarController.isJumpPage
-          ..itemIndex = index
-          ..page = widget.pageController.page ?? 0;
-        return widget.builder(context, tabbarItemInfoList[index]);
-      },
-      onTapTabItem: _onTapTabbarItem,
-      itemCount: widget.itemCount,
-      tabbarItemInfoList: tabbarItemInfoList,
-    );
+  Widget _buildTabBarItemRow() {
+    return Stack(children: [
+      if (widget.indicator != null) widget.indicator!,
+      TabBarItemRow(
+        viewPortWidth: widget.physics is NeverScrollableScrollPhysics
+            ? getViewportWidth()
+            : null,
+        physics: widget.physics,
+        key: _tabItemListState,
+        controller: widget.controller,
+        builder: (context, index) {
+          tabBarItemInfoList[index]
+            ..currentIndex = currentIndex
+            ..isJumpPage = widget.controller.isJumpPage
+            ..itemIndex = index
+            ..page = getControllerPage;
+          return widget.builder(context, tabBarItemInfoList[index]);
+        },
+        onTapItem: _onTapItem,
+        itemCount: widget.itemCount,
+        tabBarItemInfoList: tabBarItemInfoList,
+      )
+    ]);
+  }
 
-    var child = Stack(
-      children: [
-        if (widget.indicator != null) widget.indicator,
-        listView,
-      ],
-    );
-    return SliverList(delegate: SliverChildListDelegate([child]));
+  Widget _buildSlivers() {
+    return SliverList(
+        delegate: SliverChildListDelegate([_buildTabBarItemRow()]));
   }
 }
 
-class CustomTabIndicator extends StatefulWidget {
-  final CustomTabbarController controller;
-  CustomTabIndicator({@required this.controller, Key key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => null;
+abstract class CustomTabIndicator extends StatefulWidget {
+  final CustomTabBarController controller;
+  CustomTabIndicator({required this.controller, Key? key}) : super(key: key);
 }
 
-abstract class CustomTabbarController {
+abstract class CustomTabBarController {
   void updateSelectedIndex(TabBarItemRowState state);
 
   ///根据pageController来设置偏移量
-  void scroll(double tabCenterX, List<TabBarItemInfo> tabbarItemInfoList,
-      ScrollController scrollController, PageController pageController) {
+  void scroll(double tabCenterX, List<TabBarItemInfo>? tabbarItemInfoList,
+      ScrollController? scrollController, PageController pageController) {
     if (isJumpPage) return;
-    var index = pageController.page.ceil();
-    var preIndex = pageController.page.floor();
-    var offsetPercent = pageController.page % 1;
-    var total = tabbarItemInfoList[index].size.width / 2 +
-        tabbarItemInfoList[preIndex].size.width / 2;
+    if (scrollController == null) return;
+    var index = pageController.page!.ceil();
+    var preIndex = pageController.page!.floor();
+    var offsetPercent = pageController.page! % 1;
+    var total = tabbarItemInfoList![index].size!.width / 2 +
+        tabbarItemInfoList[preIndex].size!.width / 2;
     var startX = getTargetItemScrollStartX(tabbarItemInfoList, preIndex);
-    var endX = startX + tabbarItemInfoList[preIndex].size.width / 2;
+    var endX = startX + tabbarItemInfoList[preIndex].size!.width / 2;
     var offsetX = 0.0;
     var contentInsertWidth = getTabsContentInsetWidth(tabbarItemInfoList);
     bool isVisible = isItemVisible(
@@ -210,7 +233,7 @@ abstract class CustomTabbarController {
 
   ///判断item是否显示在可见区域
   bool isItemVisible(ScrollController scrollController, index,
-      List<TabBarItemInfo> tabbarItemInfoList, double tabbarWidth) {
+      List<TabBarItemInfo>? tabbarItemInfoList, double tabbarWidth) {
     var startX = getTargetItemScrollStartX(tabbarItemInfoList, index);
     return scrollController.position.pixels < startX &&
         startX < scrollController.position.pixels + tabbarWidth;
@@ -222,8 +245,8 @@ abstract class CustomTabbarController {
   void scrollTargetIndexTarBarItemToCenter(
       double tabCenterX,
       int currentIndex,
-      List<TabBarItemInfo> tabbarItemInfoList,
-      ScrollController scrollController,
+      List<TabBarItemInfo>? tabbarItemInfoList,
+      ScrollController? scrollController,
       Duration duration) {
     if (isJumpPage) return;
     if (currentIndex == lastIndex) return;
@@ -233,7 +256,7 @@ abstract class CustomTabbarController {
     var contentInsertWidth = getTabsContentInsetWidth(tabbarItemInfoList);
 
     var animateToOffsetX = targetItemScrollX -
-        tabbarItemInfoList[currentIndex].size.width / 2 -
+        tabbarItemInfoList![currentIndex].size!.width / 2 -
         tabCenterX;
 
     if (animateToOffsetX <= 0) {
@@ -250,7 +273,7 @@ abstract class CustomTabbarController {
 
     lastIndex = currentIndex;
 
-    scrollController.animateTo(animateToOffsetX,
+    scrollController?.animateTo(animateToOffsetX,
         duration: duration, curve: Curves.ease);
 
     Future.delayed(duration, () {
@@ -259,13 +282,13 @@ abstract class CustomTabbarController {
   }
 
   void updateScrollIndicator(
-    double scrollProgress,
-    List<TabBarItemInfo> tabbarItemInfoList,
+    double? scrollProgress,
+    List<TabBarItemInfo>? tabbarItemInfoList,
     Duration duration,
   );
   void indicatorScrollToIndex(
     int index,
-    List<TabBarItemInfo> tabbarItemInfoList,
+    List<TabBarItemInfo>? tabbarItemInfoList,
     Duration duration,
   );
 
@@ -274,30 +297,28 @@ abstract class CustomTabbarController {
   bool isJumpPage = false;
 
   double getTargetItemScrollEndX(
-      List<TabBarItemInfo> tabbarItemInfoList, int index) {
+      List<TabBarItemInfo>? tabbarItemInfoList, int index) {
     double totalX = 0;
     for (int i = 0; i <= index; i++) {
-      totalX += tabbarItemInfoList[i].size.width;
+      totalX += tabbarItemInfoList![i].size!.width;
     }
     return totalX;
   }
 
   double getTargetItemScrollStartX(
-      List<TabBarItemInfo> tabbarItemInfoList, int index) {
+      List<TabBarItemInfo>? tabbarItemInfoList, int index) {
     double totalX = 0;
     for (int i = 0; i < index; i++) {
-      totalX += tabbarItemInfoList[i].size.width;
+      totalX += tabbarItemInfoList![i].size!.width;
     }
     return totalX;
   }
 
   double tabsContentInsetWidth = 0;
-  double getTabsContentInsetWidth(List<TabBarItemInfo> tabbarItemInfoList) {
+  double getTabsContentInsetWidth(List<TabBarItemInfo>? tabbarItemInfoList) {
     if (tabsContentInsetWidth == 0) {
-      tabbarItemInfoList.forEach((item) {
-        if (item != null) {
-          tabsContentInsetWidth += item.size.width;
-        }
+      tabbarItemInfoList!.forEach((item) {
+        tabsContentInsetWidth += item.size!.width;
       });
     }
     return tabsContentInsetWidth;
