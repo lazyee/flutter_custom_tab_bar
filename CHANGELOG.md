@@ -60,3 +60,6 @@ fix some bug
 
 ## [1.0.3] - 2021.8.10
 Added the ability to bisecting the width of tab bar items in a non-sliding state
+
+## [1.0.4] - 2021.10.20
+fix some bug

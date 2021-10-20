@@ -61,9 +61,12 @@ class TabBarItemRowState extends State<TabBarItemRow> {
       for (var i = 0; i < widget.itemCount; i++) {
         widgetList.add(_createItem(
             i,
-            _TabBarItem(
-                child: widget.builder(context, i),
-                info: widget.tabBarItemInfoList[i])));
+            MeasureSizeBox(
+              child: widget.builder(context, i),
+              onSizeCallback: (size) {
+                widget.tabBarItemInfoList[i].size = size;
+              },
+            )));
       }
     }
 
@@ -71,31 +74,59 @@ class TabBarItemRowState extends State<TabBarItemRow> {
   }
 }
 
-class _TabBarItem extends SingleChildRenderObjectWidget {
-  final Widget child;
-  final TabBarItemInfo info;
+// class _TabBarItem extends SingleChildRenderObjectWidget {
+//   final Widget child;
+//   final TabBarItemInfo info;
 
-  _TabBarItem({
+//   _TabBarItem({
+//     required this.child,
+//     required this.info,
+//   }) : super(child: child);
+
+//   @override
+//   RenderObject createRenderObject(BuildContext context) {
+//     return _TabBarItemRenderObj(info: this.info);
+//   }
+// }
+
+// class _TabBarItemRenderObj extends RenderConstrainedBox {
+//   final TabBarItemInfo info;
+
+//   _TabBarItemRenderObj({required this.info})
+//       : super(additionalConstraints: BoxConstraints());
+
+//   @override
+//   void layout(Constraints constraints, {bool parentUsesSize = false}) {
+//     super.layout(constraints, parentUsesSize: parentUsesSize);
+
+//     info.size = Size.copy(size);
+//   }
+// }
+
+class MeasureSizeBox extends SingleChildRenderObjectWidget {
+  final Widget child;
+  final ValueChanged<Size> onSizeCallback;
+
+  MeasureSizeBox({
     required this.child,
-    required this.info,
+    required this.onSizeCallback,
   }) : super(child: child);
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _TabBarItemRenderObj(info: this.info);
+    return _RenderConstrainedBox(onSizeCallback: this.onSizeCallback);
   }
 }
 
-class _TabBarItemRenderObj extends RenderConstrainedBox {
-  final TabBarItemInfo info;
+class _RenderConstrainedBox extends RenderConstrainedBox {
+  final ValueChanged<Size> onSizeCallback;
 
-  _TabBarItemRenderObj({required this.info})
+  _RenderConstrainedBox({required this.onSizeCallback})
       : super(additionalConstraints: BoxConstraints());
 
   @override
   void layout(Constraints constraints, {bool parentUsesSize = false}) {
     super.layout(constraints, parentUsesSize: parentUsesSize);
-
-    info.size = Size.copy(size);
+    onSizeCallback(Size.copy(size));
   }
 }
