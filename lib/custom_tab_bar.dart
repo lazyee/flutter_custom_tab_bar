@@ -12,7 +12,7 @@ typedef IndexedTabItemBuilder = Widget Function(
 class CustomTabBar extends StatefulWidget {
   final IndexedTabItemBuilder builder;
   final int itemCount;
-  final int defaultPage;
+  final int initPage;
   final CustomTabIndicator? indicator;
   final PageController pageController;
   final CustomTabBarController controller;
@@ -30,7 +30,7 @@ class CustomTabBar extends StatefulWidget {
       required this.controller,
       this.indicator,
       this.backgroundColor = Colors.transparent,
-      this.defaultPage = 0,
+      this.initPage = 0,
       this.width,
       this.height,
       this.alignment = Alignment.center,
@@ -47,7 +47,6 @@ class CustomTabBar extends StatefulWidget {
 class _CustomTabBarState extends State<CustomTabBar> {
   late List<TabBarItemInfo> tabBarItemInfoList;
   ScrollController? _scrollController;
-  GlobalKey _scrollableKey = GlobalKey();
   GlobalKey<TabBarItemRowState> _tabItemListState =
       GlobalKey<TabBarItemRowState>();
   final Duration animDuration = Duration(milliseconds: 300);
@@ -81,22 +80,24 @@ class _CustomTabBarState extends State<CustomTabBar> {
 
     ///延迟一下获取具体的size
     Future.delayed(Duration(milliseconds: 0), () {
-      widget.pageController.jumpToPage(widget.defaultPage);
+      widget.pageController.jumpToPage(widget.initPage);
       widget.indicator?.controller.updateScrollIndicator(
           getControllerPage, tabBarItemInfoList, animDuration);
     });
   }
 
   double getViewportWidth() {
-    if (widget.physics is NeverScrollableScrollPhysics) {
-      return widget.width ?? MediaQuery.of(context).size.width;
+    if (widget.width != null) {
+      return widget.width!;
     }
-    if (_scrollableKey.currentContext == null) {
+
+    if (_viewportWidth == 0) {
       return MediaQuery.of(context).size.width;
     }
-    return _scrollableKey.currentContext!.size!.width;
+    return _viewportWidth;
   }
 
+  double _viewportWidth = 0;
   double? getViewportHeight() {
     if (widget.physics is NeverScrollableScrollPhysics) {
       return null;
@@ -113,13 +114,16 @@ class _CustomTabBarState extends State<CustomTabBar> {
         decoration: BoxDecoration(color: widget.backgroundColor),
         child: widget.physics is NeverScrollableScrollPhysics
             ? _buildTabBarItemRow()
-            : Scrollable(
-                key: _scrollableKey,
-                controller: _scrollController,
-                viewportBuilder: _buildViewport,
-                axisDirection: AxisDirection.right,
-                physics: widget.physics,
-              ));
+            : MeasureSizeBox(
+                onSizeCallback: (size) {
+                  _viewportWidth = size.width;
+                },
+                child: Scrollable(
+                  controller: _scrollController,
+                  viewportBuilder: _buildViewport,
+                  axisDirection: AxisDirection.right,
+                  physics: widget.physics,
+                )));
   }
 
   Widget _buildViewport(BuildContext context, ViewportOffset offset) {
@@ -205,6 +209,7 @@ abstract class CustomTabBarController {
     var endX = startX + tabbarItemInfoList[preIndex].size!.width / 2;
     var offsetX = 0.0;
     var contentInsertWidth = getTabsContentInsetWidth(tabbarItemInfoList);
+
     bool isVisible = isItemVisible(
         scrollController, index, tabbarItemInfoList, tabCenterX * 2);
     if (isVisible) {
@@ -246,6 +251,8 @@ abstract class CustomTabBarController {
       Duration duration) {
     if (isJumpPage) return;
     if (currentIndex == lastIndex) return;
+
+    // print(tabbarItemInfoList![currentIndex].size);
 
     var targetItemScrollX =
         getTargetItemScrollEndX(tabbarItemInfoList, currentIndex);

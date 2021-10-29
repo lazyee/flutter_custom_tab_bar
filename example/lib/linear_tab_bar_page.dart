@@ -49,19 +49,17 @@ class _LinearTabBarPageState extends State<LinearTabBarPage> {
       appBar: AppBar(title: Text('Linear Indicator')),
       body: Column(
         children: [
-          Container(
+          CustomTabBar(
+            initPage: 0,
             height: 35,
-            child: CustomTabBar(
-              defaultPage: 0,
-              itemCount: pageCount,
-              builder: getTabbarChild,
-              indicator: LinearIndicator(
-                indicatorColor: Colors.pink,
-                controller: _linearIndicatorController,
-              ),
-              pageController: _controller,
+            itemCount: pageCount,
+            builder: getTabbarChild,
+            indicator: LinearIndicator(
+              indicatorColor: Colors.pink,
               controller: _linearIndicatorController,
             ),
+            pageController: _controller,
+            controller: _linearIndicatorController,
           ),
           Expanded(
               child: PageView.builder(

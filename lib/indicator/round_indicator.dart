@@ -109,18 +109,22 @@ class RoundIndicatorController extends CustomTabBarController {
     double right = 0;
 
     //当前Item的宽度
-    double currentIndexWidth = tabbarItemInfoList![currentIndex].size!.width;
+    double currentIndexItemWidth =
+        tabbarItemInfoList![currentIndex].size!.width;
 
     //获取下一个Item的宽度
-    double nextIndexWidth = 0;
+    double nextIndexItemWidth = 0;
     if (currentIndex <= tabbarItemInfoList.length - 1) {
-      nextIndexWidth = tabbarItemInfoList[currentIndex].size!.width;
+      nextIndexItemWidth = tabbarItemInfoList[currentIndex + 1].size!.width;
     } else {
       return;
     }
 
-    left = currenIndexScrollX - currentIndexWidth + currentIndexWidth * percent;
-    right = tabContentInsert - currenIndexScrollX - nextIndexWidth * percent;
+    left = currenIndexScrollX -
+        currentIndexItemWidth +
+        currentIndexItemWidth * percent;
+    right =
+        tabContentInsert - currenIndexScrollX - nextIndexItemWidth * percent;
 
     lastScrollProgress = scrollProgress;
     state.update(left, right);

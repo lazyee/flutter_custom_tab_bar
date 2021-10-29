@@ -48,22 +48,20 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
       appBar: AppBar(title: Text('Round Indicator')),
       body: Column(
         children: [
-          Container(
+          CustomTabBar(
+            initPage: 0,
             height: 35,
-            child: CustomTabBar(
-              defaultPage: 0,
-              itemCount: pageCount,
-              builder: getTabbarChild,
-              indicator: RoundIndicator(
-                indicatorColor: Colors.red,
-                top: 2.5,
-                bottom: 2.5,
-                radius: 15,
-                controller: _roundIndicatorController,
-              ),
-              pageController: _controller,
+            itemCount: pageCount,
+            builder: getTabbarChild,
+            indicator: RoundIndicator(
+              indicatorColor: Colors.red,
+              top: 2.5,
+              bottom: 2.5,
+              radius: 15,
               controller: _roundIndicatorController,
             ),
+            pageController: _controller,
+            controller: _roundIndicatorController,
           ),
           Expanded(
               child: PageView.builder(

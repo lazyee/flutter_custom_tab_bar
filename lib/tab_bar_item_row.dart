@@ -74,35 +74,6 @@ class TabBarItemRowState extends State<TabBarItemRow> {
   }
 }
 
-// class _TabBarItem extends SingleChildRenderObjectWidget {
-//   final Widget child;
-//   final TabBarItemInfo info;
-
-//   _TabBarItem({
-//     required this.child,
-//     required this.info,
-//   }) : super(child: child);
-
-//   @override
-//   RenderObject createRenderObject(BuildContext context) {
-//     return _TabBarItemRenderObj(info: this.info);
-//   }
-// }
-
-// class _TabBarItemRenderObj extends RenderConstrainedBox {
-//   final TabBarItemInfo info;
-
-//   _TabBarItemRenderObj({required this.info})
-//       : super(additionalConstraints: BoxConstraints());
-
-//   @override
-//   void layout(Constraints constraints, {bool parentUsesSize = false}) {
-//     super.layout(constraints, parentUsesSize: parentUsesSize);
-
-//     info.size = Size.copy(size);
-//   }
-// }
-
 class MeasureSizeBox extends SingleChildRenderObjectWidget {
   final Widget child;
   final ValueChanged<Size> onSizeCallback;

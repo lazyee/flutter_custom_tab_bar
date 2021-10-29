@@ -53,20 +53,20 @@ class _StandardTabBarPageState extends State<StandardTabBarPage> {
       appBar: AppBar(title: Text('Standard Indicator')),
       body: Column(
         children: [
-          Container(
+          CustomTabBar(
+            initPage: 0,
             height: 35,
-            child: CustomTabBar(
-              defaultPage: 0,
-              itemCount: pageCount,
-              builder: getTabbarChild,
-              indicator: StandardIndicator(
-                indicatorWidth: 20,
-                indicatorColor: Colors.green,
-                controller: controller,
-              ),
-              pageController: _controller,
+            width: 200,
+            // physics: NeverScrollableScrollPhysics(),
+            itemCount: pageCount,
+            builder: getTabbarChild,
+            indicator: StandardIndicator(
+              indicatorWidth: 20,
+              indicatorColor: Colors.green,
               controller: controller,
             ),
+            pageController: _controller,
+            controller: controller,
           ),
           Expanded(
               child: PageView.builder(

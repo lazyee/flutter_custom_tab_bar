@@ -111,30 +111,32 @@ class StandardIndicatorController extends CustomTabBarController {
     double left = 0;
     double right = 0;
 
-    double currentIndexWidth = tabbarItemInfoList![currentIndex].size!.width;
-    double nextIndexWidth = 0;
+    double currentIndexItemWidth =
+        tabbarItemInfoList![currentIndex].size!.width;
+    double nextIndexItemWidth = 0;
     if (currentIndex <= tabbarItemInfoList.length - 1) {
-      nextIndexWidth = tabbarItemInfoList[currentIndex].size!.width;
+      nextIndexItemWidth = tabbarItemInfoList[currentIndex + 1].size!.width;
     } else {
       return;
     }
 
     if (percent <= 0.5) {
-      left = currenIndexScrollX - (currentIndexWidth + indicatorWidth) * 0.5;
+      left =
+          currenIndexScrollX - (currentIndexItemWidth + indicatorWidth) * 0.5;
       right = tabContentInsert -
           currenIndexScrollX +
-          currentIndexWidth * (0.5 - percent) -
+          currentIndexItemWidth * (0.5 - percent) -
           indicatorWidth * 0.5 -
-          nextIndexWidth * percent;
+          nextIndexItemWidth * percent;
     } else {
       left = currenIndexScrollX -
           indicatorWidth * 0.5 -
-          nextIndexWidth * (0.5 - percent) -
-          currentIndexWidth * (1 - percent);
+          nextIndexItemWidth * (0.5 - percent) -
+          currentIndexItemWidth * (1 - percent);
 
       right = tabContentInsert -
           currenIndexScrollX -
-          (nextIndexWidth + indicatorWidth) / 2;
+          (nextIndexItemWidth + indicatorWidth) / 2;
     }
 
     lastScrollProgress = scrollProgress;
