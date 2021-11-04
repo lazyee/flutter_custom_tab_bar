@@ -102,7 +102,7 @@ class LinearIndicatorController extends CustomTabBarController {
 
     //获取下一个Item的宽度
     double nextIndexItemWidth = 0;
-    if (currentIndex <= tabbarItemInfoList.length - 1) {
+    if (currentIndex < tabbarItemInfoList.length - 1) {
       nextIndexItemWidth = tabbarItemInfoList[currentIndex + 1].size!.width;
     } else {
       return;

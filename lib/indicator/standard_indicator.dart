@@ -114,7 +114,7 @@ class StandardIndicatorController extends CustomTabBarController {
     double currentIndexItemWidth =
         tabbarItemInfoList![currentIndex].size!.width;
     double nextIndexItemWidth = 0;
-    if (currentIndex <= tabbarItemInfoList.length - 1) {
+    if (currentIndex < tabbarItemInfoList.length - 1) {
       nextIndexItemWidth = tabbarItemInfoList[currentIndex + 1].size!.width;
     } else {
       return;
