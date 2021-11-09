@@ -66,3 +66,5 @@ fix some bug
 
 ## [1.0.5] - 2021.10.29
 fix some bug
+## [1.0.6] - 2021.11.04
+fix some bug
