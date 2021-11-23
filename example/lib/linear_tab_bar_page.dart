@@ -55,7 +55,7 @@ class _LinearTabBarPageState extends State<LinearTabBarPage> {
             itemCount: pageCount,
             builder: getTabbarChild,
             indicator: LinearIndicator(
-              indicatorColor: Colors.pink,
+              color: Colors.pink,
               controller: _linearIndicatorController,
             ),
             pageController: _controller,

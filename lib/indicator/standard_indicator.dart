@@ -5,16 +5,19 @@ import '../tab_bar_item_info.dart';
 import '../tab_bar_item_row.dart';
 
 class StandardIndicator extends CustomTabIndicator {
-  final double indicatorWidth;
-  final Color indicatorColor;
+  final double width;
+  final double height;
+  final Color color;
   final StandardIndicatorController controller;
 
   StandardIndicator({
-    required this.indicatorWidth,
-    required this.indicatorColor,
+    required this.width,
+    required this.color,
     required this.controller,
+    this.height = 3,
     Key? key,
-  }) : super(controller: controller, key: key);
+  })  : assert(width > 0, height > 0),
+        super(controller: controller, key: key);
 
   @override
   _StandardIndicatorState createState() => _StandardIndicatorState();
@@ -29,7 +32,7 @@ class _StandardIndicatorState extends State<StandardIndicator>
   void initState() {
     super.initState();
 
-    widget.controller.indicatorWidth = widget.indicatorWidth;
+    widget.controller.indicatorWidth = widget.width;
     widget.controller.state = this;
     widget.controller.tickerProvider = this;
   }
@@ -58,11 +61,11 @@ class _StandardIndicatorState extends State<StandardIndicator>
       right: right,
       bottom: 0,
       child: Container(
-        width: widget.indicatorWidth,
-        height: 3,
+        width: widget.width,
+        height: widget.height,
         decoration: BoxDecoration(
-          color: widget.indicatorColor,
-          borderRadius: BorderRadius.circular(1.75),
+          color: widget.color,
+          borderRadius: BorderRadius.circular(widget.height / 2),
         ),
       ),
     );

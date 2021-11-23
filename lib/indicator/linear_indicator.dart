@@ -5,10 +5,10 @@ import '../tab_bar_item_info.dart';
 import '../tab_bar_item_row.dart';
 
 class LinearIndicator extends CustomTabIndicator {
-  final Color indicatorColor;
+  final Color color;
   final LinearIndicatorController controller;
   LinearIndicator({
-    required this.indicatorColor,
+    required this.color,
     required this.controller,
     Key? key,
   }) : super(controller: LinearIndicatorController(), key: key);
@@ -53,7 +53,7 @@ class _LinearIndicatorState extends State<LinearIndicator>
       bottom: 0,
       child: Container(
         height: 3,
-        color: widget.indicatorColor,
+        color: widget.color,
       ),
     );
   }

@@ -68,3 +68,9 @@ fix some bug
 fix some bug
 ## [1.0.6] - 2021.11.04
 fix some bug
+
+## [1.0.7] - 2021.11.23
+1. 修改indicatorColor属性为color
+2. 修改indicatorWidth属性为width
+3. 增加StandardIndicator height属性
+

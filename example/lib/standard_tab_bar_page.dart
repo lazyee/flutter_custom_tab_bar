@@ -61,8 +61,9 @@ class _StandardTabBarPageState extends State<StandardTabBarPage> {
             itemCount: pageCount,
             builder: getTabbarChild,
             indicator: StandardIndicator(
-              indicatorWidth: 20,
-              indicatorColor: Colors.green,
+              width: 20,
+              height: 2,
+              color: Colors.green,
               controller: controller,
             ),
             pageController: _controller,

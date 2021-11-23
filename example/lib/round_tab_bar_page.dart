@@ -54,7 +54,7 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
             itemCount: pageCount,
             builder: getTabbarChild,
             indicator: RoundIndicator(
-              indicatorColor: Colors.red,
+              color: Colors.red,
               top: 2.5,
               bottom: 2.5,
               radius: 15,

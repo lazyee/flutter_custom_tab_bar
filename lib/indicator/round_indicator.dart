@@ -5,15 +5,14 @@ import '../tab_bar_item_info.dart';
 import '../tab_bar_item_row.dart';
 
 class RoundIndicator extends CustomTabIndicator {
-  final Color indicatorColor;
+  final Color color;
   final double top;
   final double bottom;
   final double radius;
   final RoundIndicatorController controller;
 
   RoundIndicator({
-    // @required this.indicatorController,
-    required this.indicatorColor,
+    required this.color,
     required this.top,
     required this.bottom,
     required this.controller,
@@ -64,7 +63,7 @@ class _RoundIndicatorState extends State<RoundIndicator>
       bottom: widget.bottom,
       child: Container(
         decoration: BoxDecoration(
-            color: widget.indicatorColor,
+            color: widget.color,
             borderRadius: BorderRadius.circular(widget.radius)),
       ),
     );
