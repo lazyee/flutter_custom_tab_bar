@@ -53,7 +53,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
   final Duration tabBarScrollDuration = Duration(milliseconds: 300);
   int currentIndex = 0;
 
-  double get getControllerPage => widget.pageController.positions.isNotEmpty
+  double get getCurrentPage => widget.pageController.positions.isNotEmpty
       ? widget.pageController.page ?? 0
       : 0;
   @override
@@ -71,18 +71,18 @@ class _CustomTabBarState extends State<CustomTabBar> {
       _tabItemListState.currentState!.updateSelectedIndex();
       widget.controller.scroll(getViewportWidth() / 2, tabBarItemInfoList,
           _scrollController, widget.pageController);
-      _tabItemListState.currentState!.notifyUpdate(getControllerPage);
-      currentIndex = getControllerPage.toInt();
+      _tabItemListState.currentState!.notifyUpdate(getCurrentPage);
+      currentIndex = getCurrentPage.toInt();
 
       widget.indicator?.controller.updateScrollIndicator(
-          getControllerPage, tabBarItemInfoList, animDuration);
+          getCurrentPage, tabBarItemInfoList, animDuration);
     });
 
     ///延迟一下获取具体的size
     Future.delayed(Duration(milliseconds: 0), () {
       widget.pageController.jumpToPage(widget.initPage);
       widget.indicator?.controller.updateScrollIndicator(
-          getControllerPage, tabBarItemInfoList, animDuration);
+          getCurrentPage, tabBarItemInfoList, animDuration);
     });
   }
 
@@ -152,6 +152,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
           .indicatorScrollToIndex(index, tabBarItemInfoList, animDuration);
     }
 
+    //pageView 跳转
     widget.pageController
         .animateToPage(index, duration: animDuration, curve: Curves.ease);
   }
@@ -171,7 +172,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
             ..currentIndex = currentIndex
             ..isJumpPage = widget.controller.isJumpPage
             ..itemIndex = index
-            ..page = getControllerPage;
+            ..page = getCurrentPage;
           return widget.builder(context, tabBarItemInfoList[index]);
         },
         onTapItem: _onTapItem,

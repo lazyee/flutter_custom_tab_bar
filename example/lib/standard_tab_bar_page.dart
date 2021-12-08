@@ -18,7 +18,7 @@ class StandardTabBarPage extends StatefulWidget {
 
 class _StandardTabBarPageState extends State<StandardTabBarPage> {
   final int pageCount = 20;
-  final PageController _controller = PageController();
+  final PageController _controller = PageController(keepPage: false);
   StandardIndicatorController controller = StandardIndicatorController();
 
   Widget getTabbarChild(BuildContext context, TabBarItemInfo data) {
