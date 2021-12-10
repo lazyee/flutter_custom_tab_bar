@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter_custom_tab_bar/custom_tab_bar.dart';
-import 'package:flutter_custom_tab_bar/delegate/color_transform_delegte.dart';
-import 'package:flutter_custom_tab_bar/indicator/round_indicator.dart';
-import 'package:flutter_custom_tab_bar/tab_bar_item.dart';
-import 'package:flutter_custom_tab_bar/tab_bar_item_info.dart';
+import 'package:flutter_custom_tab_bar/library.dart';
 
 import 'page_item.dart';
 
@@ -18,12 +13,10 @@ class RoundTabBarPage extends StatefulWidget {
 class _RoundTabBarPageState extends State<RoundTabBarPage> {
   final int pageCount = 20;
   final PageController _controller = PageController();
-  final RoundIndicatorController _roundIndicatorController =
-      RoundIndicatorController();
 
-  Widget getTabbarChild(BuildContext context, TabBarItemInfo data) {
+  Widget getTabbarChild(BuildContext context, int index) {
     return TabBarItem(
-        delegate: ColorTransformDelegate(
+        transform: ColorsTransform(
             highlightColor: Colors.white,
             normalColor: Colors.black,
             builder: (context, color) {
@@ -32,14 +25,12 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
                 alignment: Alignment.center,
                 constraints: BoxConstraints(minWidth: 60),
                 child: (Text(
-                  data.itemIndex == 5
-                      ? 'Tab555555555555'
-                      : 'Tab${data.itemIndex}',
+                  index == 5 ? 'Tab555555555555' : 'Tab$index',
                   style: TextStyle(fontSize: 14, color: color),
                 )),
               );
             }),
-        tabbarItemInfo: data);
+        index: index);
   }
 
   @override
@@ -49,7 +40,7 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
       body: Column(
         children: [
           CustomTabBar(
-            initPage: 0,
+            initialIndex: 0,
             height: 35,
             itemCount: pageCount,
             builder: getTabbarChild,
@@ -57,11 +48,9 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
               color: Colors.red,
               top: 2.5,
               bottom: 2.5,
-              radius: 15,
-              controller: _roundIndicatorController,
+              radius: BorderRadius.circular(15),
             ),
             pageController: _controller,
-            controller: _roundIndicatorController,
           ),
           Expanded(
               child: PageView.builder(

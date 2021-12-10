@@ -1,178 +1,87 @@
 import 'package:flutter/material.dart';
 
-import '../custom_tab_bar.dart';
-import '../tab_bar_item_info.dart';
-import '../tab_bar_item_row.dart';
+import '../models.dart';
+import 'custom_indicator.dart';
 
-class StandardIndicator extends CustomTabIndicator {
+class StandardIndicator extends CustomIndicator {
+  final Color color;
+  final double bottom;
+  final BorderRadius? radius;
   final double width;
   final double height;
-  final Color color;
-  final StandardIndicatorController controller;
 
-  StandardIndicator({
-    required this.width,
-    required this.color,
-    required this.controller,
-    this.height = 3,
-    Key? key,
-  })  : assert(width > 0, height > 0),
-        super(controller: controller, key: key);
-
-  @override
-  _StandardIndicatorState createState() => _StandardIndicatorState();
-}
-
-class _StandardIndicatorState extends State<StandardIndicator>
-    with TickerProviderStateMixin {
-  double left = 0;
-  double right = 0;
-
-  @override
-  void initState() {
-    super.initState();
-
-    widget.controller.indicatorWidth = widget.width;
-    widget.controller.state = this;
-    widget.controller.tickerProvider = this;
-  }
-
-  void update(double left, double right) {
-    setState(() {
-      this.left = left;
-      this.right = right;
-    });
-  }
+  StandardIndicator(
+      {required this.width,
+      required this.color,
+      this.bottom = 0,
+      this.height = 3,
+      this.radius})
+      : super(bottom: bottom, color: color, height: height, radius: radius);
 
   @override
   void dispose() {
-    widget.controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (left == right && left == 0) {
-      return SizedBox();
-    }
-    return Positioned(
-      key: widget.key,
-      left: left,
-      right: right,
-      bottom: 0,
-      child: Container(
-        width: widget.width,
-        height: widget.height,
-        decoration: BoxDecoration(
-          color: widget.color,
-          borderRadius: BorderRadius.circular(widget.height / 2),
-        ),
-      ),
-    );
-  }
-}
-
-class StandardIndicatorController extends CustomTabBarController {
-  late _StandardIndicatorState state;
-  double indicatorWidth = 0;
-  late TickerProvider tickerProvider;
-
-  double getTabIndicatorCenterX(double width) {
-    return width / 2;
-  }
-
-  @override
-  void dispose() {
-    if (_animationController != null) {
-      _animationController!.stop(canceled: true);
-    }
-  }
-
-  double? lastScrollProgress = 0;
-  @override
-  void updateScrollIndicator(double? scrollProgress,
-      List<TabBarItemInfo>? tabbarItemInfoList, Duration duration) {
-    if (isJumpPage) return;
-    double percent = scrollProgress! % 1.0;
-
-    ///确定当前索引值位置
-    int currentIndex = 0;
-    if (scrollProgress > lastScrollProgress!) {
-      if (scrollProgress.toInt() > lastScrollProgress!.toInt()) {
-        currentIndex = scrollProgress.toInt();
-      } else {
-        currentIndex = lastScrollProgress!.toInt();
-        percent = percent == 0 ? 1 : percent;
-      }
-    } else {
-      currentIndex = scrollProgress.toInt();
-    }
-
-    double currenIndexScrollX =
-        getTargetItemScrollEndX(tabbarItemInfoList, currentIndex);
-    double tabContentInsert = getTabsContentInsetWidth(tabbarItemInfoList);
-    double left = 0;
-    double right = 0;
-
-    double currentIndexItemWidth =
-        tabbarItemInfoList![currentIndex].size!.width;
-    double nextIndexItemWidth = 0;
-    if (currentIndex < tabbarItemInfoList.length - 1) {
-      nextIndexItemWidth = tabbarItemInfoList[currentIndex + 1].size!.width;
-    } else {
-      return;
-    }
-
-    if (percent <= 0.5) {
-      left =
-          currenIndexScrollX - (currentIndexItemWidth + indicatorWidth) * 0.5;
-      right = tabContentInsert -
-          currenIndexScrollX +
-          currentIndexItemWidth * (0.5 - percent) -
-          indicatorWidth * 0.5 -
-          nextIndexItemWidth * percent;
-    } else {
-      left = currenIndexScrollX -
-          indicatorWidth * 0.5 -
-          nextIndexItemWidth * (0.5 - percent) -
-          currentIndexItemWidth * (1 - percent);
-
-      right = tabContentInsert -
-          currenIndexScrollX -
-          (nextIndexItemWidth + indicatorWidth) / 2;
-    }
-
-    lastScrollProgress = scrollProgress;
-    state.update(left, right);
+    _animationController?.stop(canceled: true);
   }
 
   AnimationController? _animationController;
   late Animation _animation;
 
   @override
+  void updateScrollIndicator(
+      double? scrollProgress,
+      List<Size>? tabbarItemInfoList,
+      Duration duration,
+      ValueNotifier<IndicatorPosition> notifier) {
+    ScrollItemInfo info =
+        getScrollTabbarItemInfo(scrollProgress, tabbarItemInfoList!);
+    if (info.nextItemWidth == -1) return;
+
+    double left = 0;
+    double right = 0;
+
+    if (info.percent <= 0.5) {
+      left = info.currentItemScrollX - (info.currentItemWidth + width) * 0.5;
+      right = info.tabbarWidth -
+          info.currentItemScrollX +
+          info.currentItemWidth * (0.5 - info.percent) -
+          width * 0.5 -
+          info.nextItemWidth * info.percent;
+    } else {
+      left = info.currentItemScrollX -
+          width * 0.5 -
+          info.nextItemWidth * (0.5 - info.percent) -
+          info.currentItemWidth * (1 - info.percent);
+
+      right = info.tabbarWidth -
+          info.currentItemScrollX -
+          (info.nextItemWidth + width) * 0.5;
+    }
+
+    notifier.value = IndicatorPosition(left, right);
+  }
+
+  @override
   void indicatorScrollToIndex(
-      int index, List<TabBarItemInfo>? tabbarItemInfoList, Duration duration) {
-    double left = state.left;
-    double targetLeft = getTargetItemScrollEndX(tabbarItemInfoList, index) -
-        (tabbarItemInfoList![index].size!.width + indicatorWidth) / 2;
+      int index,
+      List<Size>? sizeList,
+      Duration duration,
+      TickerProvider vsync,
+      ValueNotifier<IndicatorPosition> notifier) {
+    double left = notifier.value.left;
+    double targetLeft = getTargetItemScrollEndX(sizeList, index) -
+        (sizeList![index].width + width) / 2;
 
     _animationController =
-        AnimationController(duration: duration, vsync: tickerProvider);
+        AnimationController(duration: duration, vsync: vsync);
 
     _animation =
         Tween(begin: left, end: targetLeft).animate(_animationController!);
     _animation.addListener(() {
-      double right = getTabsContentInsetWidth(tabbarItemInfoList) -
-          _animation.value -
-          indicatorWidth;
-      state.update(_animation.value, right);
+      double right = getTabbarWidth(sizeList) - _animation.value - width;
+
+      notifier.value = IndicatorPosition(_animation.value, right);
     });
 
     _animationController!.forward();
-  }
-
-  @override
-  void updateSelectedIndex(TabBarItemRowState state) {
-    state.notifyUpdate(0.0);
   }
 }

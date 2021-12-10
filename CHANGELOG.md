@@ -74,3 +74,8 @@ fix some bug
 2. 修改indicatorWidth属性为width
 3. 增加StandardIndicator height属性
 
+## [1.0.8] - 2021.12.10
+[破坏性更新]
+1.修改指示器控制方式
+2.重构代码,移除不合理的代码设计
+3.修复跨索引跳转的时候tabbar item的动画生硬的问题

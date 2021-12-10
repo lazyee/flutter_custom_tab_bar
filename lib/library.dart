@@ -1,10 +1,9 @@
-export './delegate/color_transform_delegte.dart';
-export './delegate/scale_transform_delegate.dart';
-export './delegate/transform_delegate.dart';
+export './indicator/custom_indicator.dart';
 export './indicator/linear_indicator.dart';
 export './indicator/round_indicator.dart';
 export './indicator/standard_indicator.dart';
 export 'custom_tab_bar.dart';
-export 'tab_bar_item.dart';
-export 'tab_bar_item_info.dart';
-export 'tab_bar_item_row.dart';
+export 'models.dart';
+export 'transform/color_transform.dart';
+export 'transform/scale_transform.dart';
+export 'transform/tab_bar_transform.dart';

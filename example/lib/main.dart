@@ -1,3 +1,4 @@
+import 'package:example/pinned_linear_tab_bar_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -60,6 +61,8 @@ class _MyHomePageState extends State<MyHomePage> {
         body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           _buildItem(context, "Standard Tab Bar", StandardTabBarPage()),
           _buildItem(context, "Linear Tab Bar", LinearTabBarPage()),
+          _buildItem(
+              context, "Pinned Linear Tab Bar", PinnedLinearTabBarPage()),
           _buildItem(context, "Round Tab Bar", RoundTabBarPage()),
         ]));
   }

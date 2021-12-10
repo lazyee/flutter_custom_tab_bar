@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter_custom_tab_bar/custom_tab_bar.dart';
-import 'package:flutter_custom_tab_bar/delegate/color_transform_delegte.dart';
-import 'package:flutter_custom_tab_bar/indicator/linear_indicator.dart';
-import 'package:flutter_custom_tab_bar/tab_bar_item.dart';
-import 'package:flutter_custom_tab_bar/tab_bar_item_info.dart';
+import 'package:flutter_custom_tab_bar/library.dart';
 
 import 'page_item.dart';
 
@@ -18,13 +13,11 @@ class LinearTabBarPage extends StatefulWidget {
 class _LinearTabBarPageState extends State<LinearTabBarPage> {
   final int pageCount = 20;
   final PageController _controller = PageController();
-  final LinearIndicatorController _linearIndicatorController =
-      LinearIndicatorController();
 
-  Widget getTabbarChild(BuildContext context, TabBarItemInfo info) {
+  Widget getTabbarChild(BuildContext context, int index) {
     return TabBarItem(
-      tabbarItemInfo: info,
-      delegate: ColorTransformDelegate(
+      index: index,
+      transform: ColorsTransform(
           highlightColor: Colors.pink,
           normalColor: Colors.black,
           builder: (context, color) {
@@ -33,9 +26,7 @@ class _LinearTabBarPageState extends State<LinearTabBarPage> {
               alignment: Alignment.center,
               constraints: BoxConstraints(minWidth: 60),
               child: (Text(
-                info.itemIndex == 5
-                    ? 'Tab555555555555'
-                    : 'Tab${info.itemIndex}',
+                index == 5 ? 'Tab555555555555' : 'Tab$index',
                 style: TextStyle(fontSize: 14, color: color),
               )),
             );
@@ -50,16 +41,12 @@ class _LinearTabBarPageState extends State<LinearTabBarPage> {
       body: Column(
         children: [
           CustomTabBar(
-            initPage: 0,
+            initialIndex: 0,
             height: 35,
             itemCount: pageCount,
             builder: getTabbarChild,
-            indicator: LinearIndicator(
-              color: Colors.pink,
-              controller: _linearIndicatorController,
-            ),
+            indicator: LinearIndicator(color: Colors.pink, bottom: 5),
             pageController: _controller,
-            controller: _linearIndicatorController,
           ),
           Expanded(
               child: PageView.builder(
