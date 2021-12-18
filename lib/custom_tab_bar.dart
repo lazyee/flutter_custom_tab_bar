@@ -351,7 +351,11 @@ class TabBarItemRowState extends State<TabBarItemRow> {
   bool isMeasureCompletedCallback = false;
 
   Widget _createItem(int index, Widget child) {
-    return GestureDetector(onTap: () => widget.onTapItem(index), child: child);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => widget.onTapItem(index),
+      child: child,
+    );
   }
 
   @override
