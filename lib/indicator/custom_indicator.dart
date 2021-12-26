@@ -21,7 +21,7 @@ class CustomTabBarController {
     _animateToIndexCallback = callback;
   }
 
-  void animateToIndex(int targetIndex) async {
+  void animateToIndex(int targetIndex) {
     _animateToIndexCallback?.call(targetIndex);
   }
 

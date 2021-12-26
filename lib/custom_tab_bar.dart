@@ -231,6 +231,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
   }
 
   void _animateToIndex(int index) {
+    if (currentIndex == index) return;
     _tabBarController.startJump();
     if (widget.controlJump) {
       widget.pageController.animateToPage(index,

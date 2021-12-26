@@ -62,11 +62,11 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
                   itemBuilder: (context, index) {
                     return PageItem(index);
                   })),
-          // TextButton(
-          //     onPressed: () {
-          //       _tabBarController.animateToIndex(3);
-          //     },
-          //     child: Text('gogogo'))
+          TextButton(
+              onPressed: () {
+                _tabBarController.animateToIndex(3);
+              },
+              child: Text('gogogo'))
         ],
       ),
     );
