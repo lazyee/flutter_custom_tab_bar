@@ -1,10 +1,22 @@
 class ScrollItemInfo {
-  double percent = 0;
-  double nextItemWidth = -1;
-  int currentIndex = -1;
-  double currentItemWidth = -1;
-  double currentItemScrollX = -1;
-  double tabbarWidth = -1;
+  final double percent;
+  final double nextItemWidth;
+  final int currentIndex;
+  final double currentItemWidth;
+  final double currentItemScrollX;
+  final double tabbarWidth;
+  final int tabsLength;
+
+  bool get isLast => tabsLength - 1 == currentIndex;
+
+  const ScrollItemInfo.obtain(
+      this.currentIndex,
+      this.currentItemScrollX,
+      this.currentItemWidth,
+      this.nextItemWidth,
+      this.percent,
+      this.tabbarWidth,
+      this.tabsLength);
 }
 
 class IndicatorPosition {

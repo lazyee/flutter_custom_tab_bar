@@ -31,7 +31,9 @@ class RoundIndicator extends CustomIndicator {
     ScrollItemInfo info =
         getScrollTabbarItemInfo(scrollProgress, tabbarItemInfoList!);
 
-    if (info.nextItemWidth == -1) return;
+    print('info.nextItemWidth:${info.nextItemWidth}');
+
+    if (info.nextItemWidth == -1 && !info.isLast) return;
 
     double left = 0;
     double right = 0;
@@ -46,6 +48,7 @@ class RoundIndicator extends CustomIndicator {
     lastScrollProgress = scrollProgress;
 
     notifier.value = IndicatorPosition(left, right);
+    // print(notifier.value);
   }
 
   AnimationController? _animationController;

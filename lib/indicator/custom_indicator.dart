@@ -4,6 +4,30 @@ import '../library.dart';
 
 class CustomTabBarController {
   double? lastScrollProgress = 0;
+  bool _isJumpToTarget = false;
+  ValueChanged<int>? _animateToIndexCallback;
+
+  void startJump() {
+    _isJumpToTarget = true;
+  }
+
+  void endJump() {
+    _isJumpToTarget = false;
+  }
+
+  bool get isJumpToTarget => _isJumpToTarget;
+
+  void setAnimToIndexCallback(ValueChanged<int> callback) {
+    _animateToIndexCallback = callback;
+  }
+
+  void animateToIndex(PageController pageController, int targetIndex) async {
+    startJump();
+    _animateToIndexCallback?.call(targetIndex);
+    await pageController.animateToPage(targetIndex,
+        duration: kCustomerTabBarAnimDuration, curve: Curves.easeIn);
+    endJump();
+  }
 
   ScrollItemInfo getScrollTabbarItemInfo(
       double? scrollProgress, List<Size> sizeList) {
@@ -30,13 +54,14 @@ class CustomTabBarController {
       nextIndexItemWidth = sizeList[currentIndex + 1].width;
     }
 
-    return ScrollItemInfo()
-      ..currentIndex = currentIndex
-      ..currentItemWidth = sizeList[currentIndex].width
-      ..currentItemScrollX = getTargetItemScrollEndX(sizeList, currentIndex)
-      ..nextItemWidth = nextIndexItemWidth
-      ..percent = percent
-      ..tabbarWidth = getTabbarWidth(sizeList);
+    return ScrollItemInfo.obtain(
+        currentIndex,
+        getTargetItemScrollEndX(sizeList, currentIndex),
+        sizeList[currentIndex].width,
+        nextIndexItemWidth,
+        percent,
+        getTabbarWidth(sizeList),
+        sizeList.length);
   }
 
   //根据pageController来计算进度

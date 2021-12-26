@@ -11,8 +11,9 @@ class RoundTabBarPage extends StatefulWidget {
 }
 
 class _RoundTabBarPageState extends State<RoundTabBarPage> {
-  final int pageCount = 20;
-  final PageController _controller = PageController();
+  final int pageCount = 4;
+  int initialPage = 3;
+  late PageController _controller = PageController(initialPage: initialPage);
 
   Widget getTabbarChild(BuildContext context, int index) {
     return TabBarItem(
@@ -40,7 +41,7 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
       body: Column(
         children: [
           CustomTabBar(
-            initialIndex: 0,
+            initialIndex: initialPage,
             height: 35,
             itemCount: pageCount,
             builder: getTabbarChild,
@@ -58,7 +59,7 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
                   itemCount: pageCount,
                   itemBuilder: (context, index) {
                     return PageItem(index);
-                  }))
+                  })),
         ],
       ),
     );

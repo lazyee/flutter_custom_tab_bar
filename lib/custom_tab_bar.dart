@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_custom_tab_bar/library.dart';
 
-final Duration animDuration = Duration(milliseconds: 300);
+final Duration kCustomerTabBarAnimDuration = Duration(milliseconds: 300);
 
 typedef IndexedTabBarItemBuilder = Widget Function(
     BuildContext context, int index);
@@ -39,7 +39,7 @@ class CustomTabBar extends StatelessWidget {
   final Alignment alignment;
   final bool pinned;
   final bool controlJump;
-
+  final CustomTabBarController? tabBarController;
   const CustomTabBar(
       {required this.builder,
       required this.itemCount,
@@ -47,6 +47,7 @@ class CustomTabBar extends StatelessWidget {
       this.onTapItem,
       this.indicator,
       this.initialIndex = 0,
+      this.tabBarController,
       this.width,
       this.height,
       this.alignment = Alignment.center,
@@ -64,6 +65,7 @@ class CustomTabBar extends StatelessWidget {
             controlJump: controlJump,
             indicator: indicator,
             initialIndex: initialIndex,
+            tabBarController: tabBarController,
             width: width,
             height: height,
             alignment: alignment,
@@ -86,12 +88,14 @@ class _CustomTabBar extends StatefulWidget {
   final Alignment alignment;
   final bool pinned;
   final bool controlJump;
+  final CustomTabBarController? tabBarController;
 
   const _CustomTabBar(
       {required this.builder,
       required this.itemCount,
       required this.pageController,
       this.onTapItem,
+      this.tabBarController,
       this.controlJump = true,
       this.indicator,
       this.initialIndex = 0,
@@ -112,7 +116,8 @@ class _CustomTabBarState extends State<_CustomTabBar>
   late List<Size> sizeList =
       List.generate(widget.itemCount, (index) => Size(0, 0));
   ScrollController? _scrollController;
-  CustomTabBarController _tabBarController = CustomTabBarController();
+  late CustomTabBarController _tabBarController =
+      widget.tabBarController ?? CustomTabBarController();
   late int currentIndex = widget.initialIndex;
   ValueNotifier<IndicatorPosition> positionNotifier =
       ValueNotifier(IndicatorPosition(0, 0));
@@ -122,11 +127,12 @@ class _CustomTabBarState extends State<_CustomTabBar>
 
   double indicatorLeft = 0;
   double indicatorRight = 0;
-  bool isJumpToTarget = false;
 
   @override
   void initState() {
     super.initState();
+
+    _tabBarController.setAnimToIndexCallback(_animateToIndex);
 
     Future.delayed(Duration.zero, () {
       progressNotifier?.value = ScrollProgressInfo(currentIndex: currentIndex);
@@ -144,7 +150,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
     }
 
     widget.pageController.addListener(() {
-      if (isJumpToTarget) return;
+      if (_tabBarController.isJumpToTarget) return;
       if (currentIndex == getCurrentPage) return;
       currentIndex = getCurrentPage.toInt();
 
@@ -157,8 +163,8 @@ class _CustomTabBarState extends State<_CustomTabBar>
         progressNotifier?.value = scrollProgressInfo;
       }
 
-      widget.indicator?.updateScrollIndicator(
-          getCurrentPage, sizeList, animDuration, positionNotifier);
+      widget.indicator?.updateScrollIndicator(getCurrentPage, sizeList,
+          kCustomerTabBarAnimDuration, positionNotifier);
     });
   }
 
@@ -221,18 +227,21 @@ class _CustomTabBarState extends State<_CustomTabBar>
   void _onTapItem(int index) {
     if (currentIndex == index) return;
     widget.onTapItem?.call(index);
+    _tabBarController.startJump();
+    _animateToIndex(index);
     if (widget.controlJump) {
-      widget.pageController
-          .animateToPage(index, duration: animDuration, curve: Curves.easeIn);
+      widget.pageController.animateToPage(index,
+          duration: kCustomerTabBarAnimDuration, curve: Curves.easeIn);
     }
-    isJumpToTarget = true;
-    updateProgressByAnimation(currentIndex, index);
+  }
 
+  void _animateToIndex(int index) {
+    updateProgressByAnimation(currentIndex, index);
     _tabBarController.scrollTargetToCenter(getViewportWidth() / 2, index,
-        sizeList, _scrollController, animDuration);
+        sizeList, _scrollController, kCustomerTabBarAnimDuration);
 
     widget.indicator?.indicatorScrollToIndex(
-        index, sizeList, animDuration, this, positionNotifier);
+        index, sizeList, kCustomerTabBarAnimDuration, this, positionNotifier);
 
     currentIndex = index;
   }
@@ -243,7 +252,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
   ///通过动画更新进度
   void updateProgressByAnimation(int currentIndex, int targetIndex) {
     progressAnimationController =
-        AnimationController(vsync: this, duration: animDuration);
+        AnimationController(vsync: this, duration: kCustomerTabBarAnimDuration);
     Animation animation = Tween<double>(begin: 0.0, end: 1.0)
         .animate(progressAnimationController!);
 
@@ -256,7 +265,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
     });
     animation.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        isJumpToTarget = false;
+        _tabBarController.endJump();
       }
     });
     progressAnimationController?.forward();
@@ -308,8 +317,8 @@ class _CustomTabBarState extends State<_CustomTabBar>
         onMeasureCompleted: () {
           WidgetsBinding.instance?.addPostFrameCallback((d) {
             setState(() {
-              widget.indicator?.updateScrollIndicator(
-                  getCurrentPage, sizeList, animDuration, positionNotifier);
+              widget.indicator?.updateScrollIndicator(getCurrentPage, sizeList,
+                  kCustomerTabBarAnimDuration, positionNotifier);
             });
           });
         },
