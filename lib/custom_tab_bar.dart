@@ -227,15 +227,15 @@ class _CustomTabBarState extends State<_CustomTabBar>
   void _onTapItem(int index) {
     if (currentIndex == index) return;
     widget.onTapItem?.call(index);
-    _tabBarController.startJump();
     _animateToIndex(index);
+  }
+
+  void _animateToIndex(int index) {
+    _tabBarController.startJump();
     if (widget.controlJump) {
       widget.pageController.animateToPage(index,
           duration: kCustomerTabBarAnimDuration, curve: Curves.easeIn);
     }
-  }
-
-  void _animateToIndex(int index) {
     updateProgressByAnimation(currentIndex, index);
     _tabBarController.scrollTargetToCenter(getViewportWidth() / 2, index,
         sizeList, _scrollController, kCustomerTabBarAnimDuration);

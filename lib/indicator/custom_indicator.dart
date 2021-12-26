@@ -21,12 +21,8 @@ class CustomTabBarController {
     _animateToIndexCallback = callback;
   }
 
-  void animateToIndex(PageController pageController, int targetIndex) async {
-    startJump();
+  void animateToIndex(int targetIndex) async {
     _animateToIndexCallback?.call(targetIndex);
-    await pageController.animateToPage(targetIndex,
-        duration: kCustomerTabBarAnimDuration, curve: Curves.easeIn);
-    endJump();
   }
 
   ScrollItemInfo getScrollTabbarItemInfo(
