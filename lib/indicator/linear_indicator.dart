@@ -23,8 +23,7 @@ class LinearIndicator extends CustomIndicator {
       ValueNotifier<IndicatorPosition> notifier) {
     ScrollItemInfo info =
         getScrollTabbarItemInfo(scrollProgress, tabbarItemInfoList!);
-
-    if (info.nextItemWidth == -1) return;
+    if (info.nextItemWidth == -1 && !info.isLast) return;
 
     double left = info.currentItemScrollX -
         info.currentItemWidth +

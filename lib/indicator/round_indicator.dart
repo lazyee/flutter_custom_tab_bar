@@ -31,8 +31,6 @@ class RoundIndicator extends CustomIndicator {
     ScrollItemInfo info =
         getScrollTabbarItemInfo(scrollProgress, tabbarItemInfoList!);
 
-    print('info.nextItemWidth:${info.nextItemWidth}');
-
     if (info.nextItemWidth == -1 && !info.isLast) return;
 
     double left = 0;

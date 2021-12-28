@@ -34,7 +34,7 @@ class StandardIndicator extends CustomIndicator {
       ValueNotifier<IndicatorPosition> notifier) {
     ScrollItemInfo info =
         getScrollTabbarItemInfo(scrollProgress, tabbarItemInfoList!);
-    if (info.nextItemWidth == -1) return;
+    if (info.nextItemWidth == -1 && !info.isLast) return;
 
     double left = 0;
     double right = 0;
@@ -56,7 +56,6 @@ class StandardIndicator extends CustomIndicator {
           info.currentItemScrollX -
           (info.nextItemWidth + width) * 0.5;
     }
-
     notifier.value = IndicatorPosition(left, right);
   }
 

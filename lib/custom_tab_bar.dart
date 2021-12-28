@@ -30,7 +30,6 @@ class CustomTabBarContext extends InheritedWidget {
 class CustomTabBar extends StatelessWidget {
   final IndexedTabBarItemBuilder builder;
   final int itemCount;
-  final int initialIndex;
   final PageController pageController;
   final CustomIndicator? indicator;
   final ValueChanged<int>? onTapItem;
@@ -46,7 +45,6 @@ class CustomTabBar extends StatelessWidget {
       required this.pageController,
       this.onTapItem,
       this.indicator,
-      this.initialIndex = 0,
       this.tabBarController,
       this.width,
       this.height,
@@ -64,7 +62,6 @@ class CustomTabBar extends StatelessWidget {
             onTapItem: onTapItem,
             controlJump: controlJump,
             indicator: indicator,
-            initialIndex: initialIndex,
             tabBarController: tabBarController,
             width: width,
             height: height,
@@ -79,7 +76,6 @@ class CustomTabBar extends StatelessWidget {
 class _CustomTabBar extends StatefulWidget {
   final IndexedTabBarItemBuilder builder;
   final int itemCount;
-  final int initialIndex;
   final PageController pageController;
   final CustomIndicator? indicator;
   final ValueChanged<int>? onTapItem;
@@ -98,7 +94,6 @@ class _CustomTabBar extends StatefulWidget {
       this.tabBarController,
       this.controlJump = true,
       this.indicator,
-      this.initialIndex = 0,
       this.width,
       this.height,
       this.alignment = Alignment.center,
@@ -118,7 +113,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
   ScrollController? _scrollController;
   late CustomTabBarController _tabBarController =
       widget.tabBarController ?? CustomTabBarController();
-  late int currentIndex = widget.initialIndex;
+  late int currentIndex = widget.pageController.initialPage;
   ValueNotifier<IndicatorPosition> positionNotifier =
       ValueNotifier(IndicatorPosition(0, 0));
   late ValueNotifier<ScrollProgressInfo>? progressNotifier =
@@ -134,15 +129,15 @@ class _CustomTabBarState extends State<_CustomTabBar>
 
     _tabBarController.setAnimToIndexCallback(_animateToIndex);
 
-    Future.delayed(Duration.zero, () {
-      progressNotifier?.value = ScrollProgressInfo(currentIndex: currentIndex);
-    });
-
     positionNotifier.addListener(() {
       setState(() {
         indicatorLeft = positionNotifier.value.left;
         indicatorRight = positionNotifier.value.right;
       });
+    });
+
+    Future.delayed(Duration.zero, () {
+      progressNotifier?.value = ScrollProgressInfo(currentIndex: currentIndex);
     });
 
     if (!widget.pinned) {
@@ -368,6 +363,15 @@ class TabBarItemRowState extends State<TabBarItemRow> {
     );
   }
 
+  bool isAllItemMeasureComplete() {
+    for (Size size in widget.sizeList) {
+      if (size.isEmpty) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Widget> widgetList = [];
@@ -395,11 +399,11 @@ class TabBarItemRowState extends State<TabBarItemRow> {
             MeasureSizeBox(
               child: widget.builder(context, i),
               onSizeCallback: (size) {
-                if (!size.isEmpty && !isMeasureCompletedCallback) {
+                widget.sizeList[i] = size;
+                if (isAllItemMeasureComplete() && !isMeasureCompletedCallback) {
                   widget.onMeasureCompleted();
                   isMeasureCompletedCallback = true;
                 }
-                widget.sizeList[i] = size;
               },
             )));
       }

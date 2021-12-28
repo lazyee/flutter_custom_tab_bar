@@ -177,14 +177,12 @@ class CustomTabBarController {
     return totalX;
   }
 
-  double tabsContentInsetWidth = 0;
   double getTabbarWidth(List<Size>? sizeList) {
-    if (tabsContentInsetWidth == 0) {
-      sizeList!.forEach((item) {
-        tabsContentInsetWidth += item.width;
-      });
-    }
-    return tabsContentInsetWidth;
+    double totalWidth = 0;
+    sizeList!.forEach((item) {
+      totalWidth += item.width;
+    });
+    return totalWidth;
   }
 }
 

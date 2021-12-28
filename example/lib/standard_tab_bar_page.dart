@@ -29,7 +29,7 @@ class _StandardTabBarPageState extends State<StandardTabBarPage> {
                     alignment: Alignment.center,
                     constraints: BoxConstraints(minWidth: 70),
                     child: (Text(
-                      index == 5 ? 'Tab555555555555' : 'Tab$index',
+                      index == 2 ? 'Tab2222' : 'Tab$index',
                       style: TextStyle(
                         fontSize: 14,
                         color: color,
@@ -46,9 +46,8 @@ class _StandardTabBarPageState extends State<StandardTabBarPage> {
       body: Column(
         children: [
           CustomTabBar(
-            initialIndex: 0,
             height: 35,
-            width: 200,
+            // width: 200,
             // physics: NeverScrollableScrollPhysics(),
             itemCount: pageCount,
             builder: getTabbarChild,
