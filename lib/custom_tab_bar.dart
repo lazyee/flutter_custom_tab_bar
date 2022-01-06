@@ -33,7 +33,7 @@ class CustomTabBar extends StatelessWidget {
   final PageController pageController;
   final CustomIndicator? indicator;
   final ValueChanged<int>? onTapItem;
-  final double height;
+  final double? height;
   final double? width;
   final bool pinned;
   final bool controlJump;
@@ -42,7 +42,7 @@ class CustomTabBar extends StatelessWidget {
       {required this.builder,
       required this.itemCount,
       required this.pageController,
-      required this.height,
+      this.height,
       this.onTapItem,
       this.indicator,
       this.tabBarController,
@@ -50,7 +50,8 @@ class CustomTabBar extends StatelessWidget {
       this.pinned = false,
       this.controlJump = true,
       Key? key})
-      : super(key: key);
+      : assert(pinned == true || (pinned == false && height != null)),
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +76,7 @@ class _CustomTabBar extends StatefulWidget {
   final PageController pageController;
   final CustomIndicator? indicator;
   final ValueChanged<int>? onTapItem;
-  final double height;
+  final double? height;
   final double? width;
   final bool pinned;
   final bool controlJump;
@@ -85,7 +86,7 @@ class _CustomTabBar extends StatefulWidget {
       {required this.builder,
       required this.itemCount,
       required this.pageController,
-      required this.height,
+      this.height,
       this.onTapItem,
       this.tabBarController,
       this.controlJump = true,
@@ -93,7 +94,8 @@ class _CustomTabBar extends StatefulWidget {
       this.width,
       this.pinned = false,
       Key? key})
-      : super(key: key);
+      : assert(pinned == true || (pinned == false && height != null)),
+        super(key: key);
 
   @override
   _CustomTabBarState createState() => _CustomTabBarState();
