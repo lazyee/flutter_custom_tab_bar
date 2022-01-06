@@ -46,7 +46,7 @@ class _PinnedLinearTabBarPageState extends State<PinnedLinearTabBarPage> {
             CustomTabBar(
                 builder: getTabbarChild,
                 pinned: true,
-                // width: 140,
+                width: 140,
                 height: 50,
                 pageController: pageController,
                 indicator: LinearIndicator(

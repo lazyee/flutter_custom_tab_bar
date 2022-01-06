@@ -35,7 +35,6 @@ class CustomTabBar extends StatelessWidget {
   final ValueChanged<int>? onTapItem;
   final double height;
   final double? width;
-  final Alignment alignment;
   final bool pinned;
   final bool controlJump;
   final CustomTabBarController? tabBarController;
@@ -48,7 +47,6 @@ class CustomTabBar extends StatelessWidget {
       this.indicator,
       this.tabBarController,
       this.width,
-      this.alignment = Alignment.center,
       this.pinned = false,
       this.controlJump = true,
       Key? key})
@@ -64,7 +62,6 @@ class CustomTabBar extends StatelessWidget {
             tabBarController: tabBarController,
             width: width,
             height: height,
-            alignment: alignment,
             pinned: pinned,
             builder: builder,
             itemCount: itemCount,
