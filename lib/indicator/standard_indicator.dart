@@ -40,20 +40,20 @@ class StandardIndicator extends CustomIndicator {
     double right = 0;
 
     if (info.percent <= 0.5) {
-      left = info.currentItemScrollX - (info.currentItemWidth + width) * 0.5;
+      left = info.currentItemScrollEndX - (info.currentItemWidth + width) * 0.5;
       right = info.tabbarWidth -
-          info.currentItemScrollX +
+          info.currentItemScrollEndX +
           info.currentItemWidth * (0.5 - info.percent) -
           width * 0.5 -
           info.nextItemWidth * info.percent;
     } else {
-      left = info.currentItemScrollX -
+      left = info.currentItemScrollEndX -
           width * 0.5 -
           info.nextItemWidth * (0.5 - info.percent) -
           info.currentItemWidth * (1 - info.percent);
 
       right = info.tabbarWidth -
-          info.currentItemScrollX -
+          info.currentItemScrollEndX -
           (info.nextItemWidth + width) * 0.5;
     }
     notifier.value = IndicatorPosition(left, right);

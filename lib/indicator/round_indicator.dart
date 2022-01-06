@@ -36,17 +36,16 @@ class RoundIndicator extends CustomIndicator {
     double left = 0;
     double right = 0;
 
-    left = info.currentItemScrollX -
+    left = info.currentItemScrollEndX -
         info.currentItemWidth +
         info.currentItemWidth * info.percent;
     right = info.tabbarWidth -
-        info.currentItemScrollX -
+        info.currentItemScrollEndX -
         info.nextItemWidth * info.percent;
 
     lastScrollProgress = scrollProgress;
 
     notifier.value = IndicatorPosition(left, right);
-    // print(notifier.value);
   }
 
   AnimationController? _animationController;

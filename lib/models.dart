@@ -3,7 +3,7 @@ class ScrollItemInfo {
   final double nextItemWidth;
   final int currentIndex;
   final double currentItemWidth;
-  final double currentItemScrollX;
+  final double currentItemScrollEndX;
   final double tabbarWidth;
   final int tabsLength;
 
@@ -11,7 +11,7 @@ class ScrollItemInfo {
 
   const ScrollItemInfo.obtain(
       this.currentIndex,
-      this.currentItemScrollX,
+      this.currentItemScrollEndX,
       this.currentItemWidth,
       this.nextItemWidth,
       this.percent,

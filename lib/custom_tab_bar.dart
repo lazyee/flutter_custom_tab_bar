@@ -33,7 +33,7 @@ class CustomTabBar extends StatelessWidget {
   final PageController pageController;
   final CustomIndicator? indicator;
   final ValueChanged<int>? onTapItem;
-  final double? height;
+  final double height;
   final double? width;
   final Alignment alignment;
   final bool pinned;
@@ -43,17 +43,16 @@ class CustomTabBar extends StatelessWidget {
       {required this.builder,
       required this.itemCount,
       required this.pageController,
+      required this.height,
       this.onTapItem,
       this.indicator,
       this.tabBarController,
       this.width,
-      this.height,
       this.alignment = Alignment.center,
       this.pinned = false,
       this.controlJump = true,
       Key? key})
-      : assert(pinned == false || (pinned == true && width != null)),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +78,7 @@ class _CustomTabBar extends StatefulWidget {
   final PageController pageController;
   final CustomIndicator? indicator;
   final ValueChanged<int>? onTapItem;
-  final double? height;
+  final double height;
   final double? width;
   final Alignment alignment;
   final bool pinned;
@@ -90,17 +89,16 @@ class _CustomTabBar extends StatefulWidget {
       {required this.builder,
       required this.itemCount,
       required this.pageController,
+      required this.height,
       this.onTapItem,
       this.tabBarController,
       this.controlJump = true,
       this.indicator,
       this.width,
-      this.height,
       this.alignment = Alignment.center,
       this.pinned = false,
       Key? key})
-      : assert(pinned == false || (pinned == true && width != null)),
-        super(key: key);
+      : super(key: key);
 
   @override
   _CustomTabBarState createState() => _CustomTabBarState();
@@ -191,7 +189,6 @@ class _CustomTabBarState extends State<_CustomTabBar>
   @override
   Widget build(BuildContext context) {
     return Container(
-        alignment: widget.alignment,
         height: getViewportHeight(),
         width: getViewportWidth(),
         child: widget.pinned
@@ -233,8 +230,9 @@ class _CustomTabBarState extends State<_CustomTabBar>
           duration: kCustomerTabBarAnimDuration, curve: Curves.easeIn);
     }
     updateProgressByAnimation(currentIndex, index);
-    _tabBarController.scrollTargetToCenter(getViewportWidth() / 2, index,
-        sizeList, _scrollController, kCustomerTabBarAnimDuration);
+    _tabBarController.scrollTargetToCenter(
+        getViewportWidth() / 2, index, sizeList, _scrollController,
+        duration: kCustomerTabBarAnimDuration);
 
     widget.indicator?.indicatorScrollToIndex(
         index, sizeList, kCustomerTabBarAnimDuration, this, positionNotifier);
@@ -315,6 +313,12 @@ class _CustomTabBarState extends State<_CustomTabBar>
             setState(() {
               widget.indicator?.updateScrollIndicator(getCurrentPage, sizeList,
                   kCustomerTabBarAnimDuration, positionNotifier);
+
+              _tabBarController.scrollTargetToCenter(
+                  getViewportWidth() / 2,
+                  widget.pageController.initialPage,
+                  sizeList,
+                  _scrollController);
             });
           });
         },
@@ -408,7 +412,6 @@ class TabBarItemRowState extends State<TabBarItemRow> {
             )));
       }
     }
-
     return Row(children: widgetList);
   }
 }

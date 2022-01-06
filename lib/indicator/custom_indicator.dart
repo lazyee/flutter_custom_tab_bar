@@ -131,13 +131,9 @@ class CustomTabBarController {
   int lastIndex = 0;
 
   ///滚动目标索引的项到中间位置
-  void scrollTargetToCenter(
-    double tabCenterX,
-    int targetIndex,
-    List<Size>? sizeList,
-    ScrollController? scrollController,
-    Duration duration,
-  ) {
+  void scrollTargetToCenter(double tabCenterX, int targetIndex,
+      List<Size>? sizeList, ScrollController? scrollController,
+      {Duration? duration}) {
     if (targetIndex == lastIndex) return;
     var targetItemScrollX = getTargetItemScrollEndX(sizeList, targetIndex);
     var tabbarWidth = getTabbarWidth(sizeList);
@@ -157,8 +153,12 @@ class CustomTabBarController {
 
     lastIndex = targetIndex;
 
-    scrollController?.animateTo(animateToOffsetX,
-        duration: duration, curve: Curves.ease);
+    if (duration == null) {
+      scrollController?.jumpTo(animateToOffsetX);
+    } else {
+      scrollController?.animateTo(animateToOffsetX,
+          duration: duration, curve: Curves.easeIn);
+    }
   }
 
   double getTargetItemScrollEndX(List<Size>? sizeList, int index) {

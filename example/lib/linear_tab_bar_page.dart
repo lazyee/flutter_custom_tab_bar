@@ -11,8 +11,8 @@ class LinearTabBarPage extends StatefulWidget {
 }
 
 class _LinearTabBarPageState extends State<LinearTabBarPage> {
-  final int pageCount = 4;
-  final PageController _controller = PageController(initialPage: 3);
+  final int pageCount = 20;
+  final PageController _controller = PageController(initialPage: 10);
 
   Widget getTabbarChild(BuildContext context, int index) {
     return TabBarItem(
