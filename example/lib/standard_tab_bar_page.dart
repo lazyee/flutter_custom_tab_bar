@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_custom_tab_bar/custom_tab_bar.dart';
 import 'package:flutter_custom_tab_bar/library.dart';
 
 import 'page_item.dart';
@@ -14,6 +13,13 @@ class StandardTabBarPage extends StatefulWidget {
 class _StandardTabBarPageState extends State<StandardTabBarPage> {
   final int pageCount = 20;
   final PageController _controller = PageController();
+
+  CustomTabBarController _tabBarController = CustomTabBarController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   Widget getTabbarChild(BuildContext context, int index) {
     return TabBarItem(
@@ -46,6 +52,7 @@ class _StandardTabBarPageState extends State<StandardTabBarPage> {
       body: Column(
         children: [
           CustomTabBar(
+            tabBarController: _tabBarController,
             height: 35,
             // width: 200,
             // physics: NeverScrollableScrollPhysics(),

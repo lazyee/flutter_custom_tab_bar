@@ -15,6 +15,11 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
   late PageController _controller = PageController(initialPage: 3);
   CustomTabBarController _tabBarController = CustomTabBarController();
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   Widget getTabbarChild(BuildContext context, int index) {
     return TabBarItem(
         transform: ColorsTransform(

@@ -108,7 +108,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
   ScrollController? _scrollController;
   late CustomTabBarController _tabBarController =
       widget.tabBarController ?? CustomTabBarController();
-  late int currentIndex = widget.pageController.initialPage;
+  late int _currentIndex = widget.pageController.initialPage;
   ValueNotifier<IndicatorPosition> positionNotifier =
       ValueNotifier(IndicatorPosition(0, 0));
   late ValueNotifier<ScrollProgressInfo>? progressNotifier =
@@ -118,11 +118,22 @@ class _CustomTabBarState extends State<_CustomTabBar>
   double indicatorLeft = 0;
   double indicatorRight = 0;
 
+  void _init() {
+    _tabBarController.setAnimateToIndexCallback(_animateToIndex);
+    widget.indicator?.controller = _tabBarController;
+  }
+
+  @override
+  void didUpdateWidget(covariant _CustomTabBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _init();
+  }
+
   @override
   void initState() {
     super.initState();
 
-    _tabBarController.setAnimToIndexCallback(_animateToIndex);
+    _init();
 
     positionNotifier.addListener(() {
       setState(() {
@@ -132,7 +143,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
     });
 
     Future.delayed(Duration.zero, () {
-      progressNotifier?.value = ScrollProgressInfo(currentIndex: currentIndex);
+      progressNotifier?.value = ScrollProgressInfo(currentIndex: _currentIndex);
     });
 
     if (!widget.pinned) {
@@ -141,14 +152,15 @@ class _CustomTabBarState extends State<_CustomTabBar>
 
     widget.pageController.addListener(() {
       if (_tabBarController.isJumpToTarget) return;
-      if (currentIndex == getCurrentPage) return;
-      currentIndex = getCurrentPage.toInt();
+      if (_currentIndex == getCurrentPage) return;
+      _currentIndex = getCurrentPage.toInt();
 
       _tabBarController.scrollByPageView(getViewportWidth() / 2, sizeList,
           _scrollController, widget.pageController);
 
-      ScrollProgressInfo? scrollProgressInfo = _tabBarController
-          .updateScrollProgressByPageView(currentIndex, widget.pageController);
+      ScrollProgressInfo? scrollProgressInfo =
+          _tabBarController.calculateScrollProgressByPageView(
+              _currentIndex, widget.pageController);
       if (scrollProgressInfo != null) {
         progressNotifier?.value = scrollProgressInfo;
       }
@@ -214,19 +226,20 @@ class _CustomTabBarState extends State<_CustomTabBar>
 
   ///点击tabbar Item
   void _onTapItem(int index) {
-    if (currentIndex == index) return;
+    if (_currentIndex == index) return;
     widget.onTapItem?.call(index);
     _animateToIndex(index);
   }
 
   void _animateToIndex(int index) {
-    if (currentIndex == index) return;
+    if (_currentIndex == index) return;
+    _tabBarController.setCurrentIndex(index);
     _tabBarController.startJump();
     if (widget.controlJump) {
       widget.pageController.animateToPage(index,
           duration: kCustomerTabBarAnimDuration, curve: Curves.easeIn);
     }
-    updateProgressByAnimation(currentIndex, index);
+    updateProgressByAnimation(_currentIndex, index);
     _tabBarController.scrollTargetToCenter(
         getViewportWidth() / 2, index, sizeList, _scrollController,
         duration: kCustomerTabBarAnimDuration);
@@ -234,7 +247,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
     widget.indicator?.indicatorScrollToIndex(
         index, sizeList, kCustomerTabBarAnimDuration, this, positionNotifier);
 
-    currentIndex = index;
+    _currentIndex = index;
   }
 
   AnimationController? progressAnimationController;

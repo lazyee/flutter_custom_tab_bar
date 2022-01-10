@@ -1,3 +1,5 @@
+## [1.1.7] - 2022.01.10
+1. CustomTabBarController的currentIndex属性和isChanging方法
 ## [1.1.6] - 2022.01.06
 1. 修复发现的问题
 2. 增加LinearIndicator的width参数

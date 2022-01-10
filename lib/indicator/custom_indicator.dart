@@ -3,9 +3,44 @@ import 'package:flutter/material.dart';
 import '../library.dart';
 
 class CustomTabBarController {
-  double? lastScrollProgress = 0;
+  double? _lastPage = 0;
   bool _isJumpToTarget = false;
   ValueChanged<int>? _animateToIndexCallback;
+  int _currentIndex = 0;
+  double _progress = 0;
+
+  List<VoidCallback?> _listeners = [];
+
+  int get currentIndex => _currentIndex;
+
+  void setCurrentIndex(int index) {
+    _currentIndex = index;
+  }
+
+  void addListener(VoidCallback? callback) {
+    _listeners.add(callback);
+  }
+
+  void removeAt(int index) {
+    if (index >= 0 && index < _listeners.length) {
+      _listeners.removeAt(index);
+    }
+  }
+
+  bool isChanging() {
+    if (isJumpToTarget) return true;
+    if (!isJumpToTarget) {
+      return double.parse(_progress.toStringAsFixed(3)) > 0.001;
+    }
+
+    return false;
+  }
+
+  void forEachListenerCallback() {
+    _listeners.forEach((listener) {
+      listener?.call();
+    });
+  }
 
   void startJump() {
     _isJumpToTarget = true;
@@ -17,7 +52,7 @@ class CustomTabBarController {
 
   bool get isJumpToTarget => _isJumpToTarget;
 
-  void setAnimToIndexCallback(ValueChanged<int> callback) {
+  void setAnimateToIndexCallback(ValueChanged<int> callback) {
     _animateToIndexCallback = callback;
   }
 
@@ -25,43 +60,42 @@ class CustomTabBarController {
     _animateToIndexCallback?.call(targetIndex);
   }
 
-  ScrollItemInfo getScrollTabbarItemInfo(
-      double? scrollProgress, List<Size> sizeList) {
-    double percent = scrollProgress! % 1.0;
+  ScrollItemInfo calculateScrollTabbarItemInfo(
+      double? page, List<Size> sizeList) {
+    _progress = page! % 1.0;
 
     ///确定当前索引值位置
-    int currentIndex = 0;
-    if (scrollProgress > lastScrollProgress!) {
-      if (scrollProgress.toInt() > lastScrollProgress!.toInt()) {
-        currentIndex = scrollProgress.toInt();
+    if (page > _lastPage!) {
+      if (page.toInt() > _lastPage!.toInt()) {
+        _currentIndex = page.toInt();
       } else {
-        currentIndex = lastScrollProgress!.toInt();
-        percent = percent == 0 ? 1 : percent;
+        _currentIndex = _lastPage!.toInt();
+        _progress = _progress == 0 ? 1 : _progress;
       }
     } else {
-      currentIndex = scrollProgress.toInt();
+      _currentIndex = page.toInt();
     }
 
-    lastScrollProgress = scrollProgress;
+    _lastPage = page;
 
     //获取下一个Item的宽度
     double nextIndexItemWidth = -1;
-    if (currentIndex < sizeList.length - 1) {
-      nextIndexItemWidth = sizeList[currentIndex + 1].width;
+    if (_currentIndex < sizeList.length - 1) {
+      nextIndexItemWidth = sizeList[_currentIndex + 1].width;
     }
 
     return ScrollItemInfo.obtain(
-        currentIndex,
-        getTargetItemScrollEndX(sizeList, currentIndex),
-        sizeList[currentIndex].width,
+        _currentIndex,
+        getTargetItemScrollEndX(sizeList, _currentIndex),
+        sizeList[_currentIndex].width,
         nextIndexItemWidth,
-        percent,
+        _progress,
         getTabbarWidth(sizeList),
         sizeList.length);
   }
 
   //根据pageController来计算进度
-  ScrollProgressInfo? updateScrollProgressByPageView(
+  ScrollProgressInfo? calculateScrollProgressByPageView(
       int currentIndex, PageController pageController) {
     if (pageController.page == currentIndex) return null;
 
@@ -72,14 +106,14 @@ class CustomTabBarController {
       targetIndex = pageController.page!.floor();
     }
 
-    var progress = pageController.page! % 1;
+    _progress = pageController.page! % 1.0;
     if (targetIndex < currentIndex) {
-      progress = 1 - progress;
+      _progress = 1 - _progress;
     }
-    progress = progress == 0 ? 1 : progress;
+    _progress = _progress == 0 ? 1 : _progress;
 
     return ScrollProgressInfo(
-        progress: progress,
+        progress: _progress,
         targetIndex: targetIndex,
         currentIndex: currentIndex);
   }
@@ -184,15 +218,21 @@ class CustomTabBarController {
     });
     return totalWidth;
   }
+
+  double getTabIndicatorCenterX(double width) {
+    return width / 2;
+  }
 }
 
-abstract class CustomIndicator extends CustomTabBarController {
+abstract class CustomIndicator {
   final double? top;
   final Color color;
   final double bottom;
   final double height;
   final double? width;
   final BorderRadius? radius;
+
+  late CustomTabBarController controller;
 
   CustomIndicator(
       {this.bottom = 0,
@@ -202,18 +242,12 @@ abstract class CustomIndicator extends CustomTabBarController {
       required this.height,
       this.radius});
 
-  double getTabIndicatorCenterX(double width) {
-    return width / 2;
-  }
+  void updateScrollIndicator(double? page, List<Size>? sizeList,
+      Duration duration, ValueNotifier<IndicatorPosition> notifier);
 
-  void updateScrollIndicator(
-      double? scrollProgress,
-      List<Size>? tabbarItemInfoList,
-      Duration duration,
-      ValueNotifier<IndicatorPosition> notifier);
   void indicatorScrollToIndex(
       int index,
-      List<Size>? tabbarItemInfoList,
+      List<Size>? sizeList,
       Duration duration,
       TickerProvider vsync,
       ValueNotifier<IndicatorPosition> notifier);

@@ -12,6 +12,12 @@ class PinnedLinearTabBarPage extends StatefulWidget {
 
 class _PinnedLinearTabBarPageState extends State<PinnedLinearTabBarPage> {
   PageController pageController = PageController();
+  CustomTabBarController _tabBarController = CustomTabBarController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   Widget getTabbarChild(BuildContext context, int index) {
     return TabBarItem(
@@ -44,6 +50,7 @@ class _PinnedLinearTabBarPageState extends State<PinnedLinearTabBarPage> {
         body: Column(
           children: [
             CustomTabBar(
+                tabBarController: _tabBarController,
                 builder: getTabbarChild,
                 pinned: true,
                 width: 140,

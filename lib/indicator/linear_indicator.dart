@@ -26,13 +26,10 @@ class LinearIndicator extends CustomIndicator {
   }
 
   @override
-  void updateScrollIndicator(
-      double? scrollProgress,
-      List<Size>? tabbarItemInfoList,
-      Duration duration,
-      ValueNotifier<IndicatorPosition> notifier) {
+  void updateScrollIndicator(double? page, List<Size>? sizeList,
+      Duration duration, ValueNotifier<IndicatorPosition> notifier) {
     ScrollItemInfo info =
-        getScrollTabbarItemInfo(scrollProgress, tabbarItemInfoList!);
+        controller.calculateScrollTabbarItemInfo(page, sizeList!);
     if (info.nextItemWidth == -1 && !info.isLast) return;
 
     double left = 0;
@@ -40,19 +37,20 @@ class LinearIndicator extends CustomIndicator {
     if (this.width == null) {
       left = info.currentItemScrollEndX -
           info.currentItemWidth +
-          info.currentItemWidth * info.percent;
+          info.currentItemWidth * info.progress;
       right = info.tabbarWidth -
           info.currentItemScrollEndX -
-          info.nextItemWidth * info.percent;
+          info.nextItemWidth * info.progress;
     } else {
       left = info.currentItemScrollEndX -
           (info.currentItemWidth + this.width!) / 2 +
-          (info.currentItemWidth + info.nextItemWidth) / 2 * info.percent;
+          (info.currentItemWidth + info.nextItemWidth) / 2 * info.progress;
 
       right = info.tabbarWidth - left - this.width!;
     }
 
     notifier.value = IndicatorPosition(left, right);
+    controller.forEachListenerCallback();
   }
 
   AnimationController? _animationController;
@@ -72,9 +70,10 @@ class LinearIndicator extends CustomIndicator {
       ValueNotifier<IndicatorPosition> notifier) {
     double left = notifier.value.left;
     double right = notifier.value.right;
-    double width = this.width ?? getTabbarWidth(sizeList) - right - left;
+    double width =
+        this.width ?? controller.getTabbarWidth(sizeList) - right - left;
 
-    double targetLeft = getTargetItemScrollStartX(sizeList, index);
+    double targetLeft = controller.getTargetItemScrollStartX(sizeList, index);
 
     if (this.width != null) {
       targetLeft = targetLeft +
@@ -82,6 +81,7 @@ class LinearIndicator extends CustomIndicator {
           this.width! / 2;
     }
     if (targetLeft == left) return;
+
     _animationController =
         AnimationController(duration: duration, vsync: vsync);
     _animation =
@@ -97,15 +97,17 @@ class LinearIndicator extends CustomIndicator {
       }
 
       if (this.width == null) {
-        targetRight = getTabbarWidth(sizeList) -
+        targetRight = controller.getTabbarWidth(sizeList) -
             _animation.value -
             width -
             (sizeList![index].width - width) * rate;
       } else {
-        targetRight = getTabbarWidth(sizeList) - _animation.value - width;
+        targetRight =
+            controller.getTabbarWidth(sizeList) - _animation.value - width;
       }
 
       notifier.value = IndicatorPosition(_animation.value, targetRight);
+      controller.forEachListenerCallback();
     });
     _animationController!.forward();
   }

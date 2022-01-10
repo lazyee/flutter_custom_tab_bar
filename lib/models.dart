@@ -1,5 +1,5 @@
 class ScrollItemInfo {
-  final double percent;
+  final double progress;
   final double nextItemWidth;
   final int currentIndex;
   final double currentItemWidth;
@@ -14,7 +14,7 @@ class ScrollItemInfo {
       this.currentItemScrollEndX,
       this.currentItemWidth,
       this.nextItemWidth,
-      this.percent,
+      this.progress,
       this.tabbarWidth,
       this.tabsLength);
 }

@@ -21,15 +21,10 @@ class RoundIndicator extends CustomIndicator {
   }
 
   @override
-  void updateScrollIndicator(
-      double? scrollProgress,
-      List<Size>? tabbarItemInfoList,
-      Duration duration,
-      ValueNotifier<IndicatorPosition> notifier) {
-    // if (isJumpPage) return;
-
+  void updateScrollIndicator(double? page, List<Size>? sizeList,
+      Duration duration, ValueNotifier<IndicatorPosition> notifier) {
     ScrollItemInfo info =
-        getScrollTabbarItemInfo(scrollProgress, tabbarItemInfoList!);
+        controller.calculateScrollTabbarItemInfo(page, sizeList!);
 
     if (info.nextItemWidth == -1 && !info.isLast) return;
 
@@ -38,14 +33,13 @@ class RoundIndicator extends CustomIndicator {
 
     left = info.currentItemScrollEndX -
         info.currentItemWidth +
-        info.currentItemWidth * info.percent;
+        info.currentItemWidth * info.progress;
     right = info.tabbarWidth -
         info.currentItemScrollEndX -
-        info.nextItemWidth * info.percent;
-
-    lastScrollProgress = scrollProgress;
+        info.nextItemWidth * info.progress;
 
     notifier.value = IndicatorPosition(left, right);
+    controller.forEachListenerCallback();
   }
 
   AnimationController? _animationController;
@@ -65,8 +59,8 @@ class RoundIndicator extends CustomIndicator {
       ValueNotifier<IndicatorPosition> notifier) {
     double left = notifier.value.left;
     double right = notifier.value.right;
-    double width = getTabbarWidth(sizeList) - right - left;
-    double targetLeft = getTargetItemScrollStartX(sizeList, index);
+    double width = controller.getTabbarWidth(sizeList) - right - left;
+    double targetLeft = controller.getTargetItemScrollStartX(sizeList, index);
     if (targetLeft == left) return;
 
     _animationController =
@@ -80,19 +74,20 @@ class RoundIndicator extends CustomIndicator {
       double targetRight = 0;
       if (left > targetLeft) {
         rate = 1 - (targetLeft - _animation.value) / (targetLeft - left);
-        targetRight = getTabbarWidth(sizeList) -
+        targetRight = controller.getTabbarWidth(sizeList) -
             _animation.value -
             width -
             (sizeList![index].width - width) * rate;
       } else {
         rate = (_animation.value - left) / (targetLeft - left);
-        targetRight = getTabbarWidth(sizeList) -
+        targetRight = controller.getTabbarWidth(sizeList) -
             _animation.value -
             width -
             (sizeList![index].width - width) * rate!;
       }
 
       notifier.value = IndicatorPosition(_animation.value, targetRight);
+      controller.forEachListenerCallback();
     });
 
     _animationController!.forward();
