@@ -130,8 +130,6 @@ class CustomTabBarController {
   }
 
   ///根据pageController来设置偏移量
-  // void scrollByPageView(double tabCenterX, List<Size>? sizeList,
-  //     ScrollController? scrollController, PageController pageController) {
   void scrollByPageView(Size tabCenterSize, List<Size>? sizeList,
       ScrollController? scrollController, PageController pageController) {
     if (scrollController == null) return;
@@ -142,7 +140,6 @@ class CustomTabBarController {
     var startX = getTargetItemScrollStartOffset(sizeList, preIndex).dx;
     var endX = startX + sizeList[preIndex].width / 2;
     var offsetX = 0.0;
-    // var contentInsertWidth = getTabbarWidth(sizeList);
     var contentInsertSize = getTabBarSize(sizeList);
 
     bool isVisible =
@@ -172,7 +169,6 @@ class CustomTabBarController {
   ///判断item是否显示在可见区域
   bool isItemVisible(ScrollController scrollController, index,
       List<Size>? sizeList, Size tabBarSize) {
-    // var startX = getTargetItemScrollStartX(sizeList, index);
     var startOffset = getTargetItemScrollStartOffset(sizeList, index);
 
     if (direction == Axis.horizontal) {
@@ -190,10 +186,8 @@ class CustomTabBarController {
       List<Size>? sizeList, ScrollController? scrollController,
       {Duration? duration}) {
     if (targetIndex == lastIndex) return;
-    // var targetItemScrollX = getTargetItemScrollEndX(sizeList, targetIndex);
     var targetItemScrollOffset =
         getTargetItemScrollEndOffset(sizeList, targetIndex);
-    // var tabbarWidth = getTabbarWidth(sizeList);
     var tabBarSize = getTabBarSize(sizeList);
 
     var animateToOffsetX = targetItemScrollOffset.dx -

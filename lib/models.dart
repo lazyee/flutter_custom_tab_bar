@@ -2,14 +2,10 @@ import 'dart:ui';
 
 class ScrollItemInfo {
   final double progress;
-  // final double nextItemWidth;
   final Size nextItemSize;
   final int currentIndex;
-  // final double currentItemWidth;
   final Size currentItemSize;
-  // final double currentItemScrollEndX;
   final Offset currentItemScrollEndOffset;
-  // final double tabbarWidth;
   final Size tabBarSize;
   final int tabsLength;
 
@@ -17,14 +13,10 @@ class ScrollItemInfo {
 
   const ScrollItemInfo.obtain(
       this.currentIndex,
-      // this.currentItemScrollEndX,
       this.currentItemScrollEndOffset,
-      // this.currentItemWidth,
       this.currentItemSize,
-      // this.nextItemWidth,
       this.nextItemSize,
       this.progress,
-      // this.tabbarWidth,
       this.tabBarSize,
       this.tabsLength);
 }

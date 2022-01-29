@@ -7,7 +7,7 @@ class RoundIndicator extends CustomIndicator {
   final Color color;
   final BorderRadius? radius;
   final double height;
-  final double top;
+  final double? top;
   final double bottom;
   final double left;
   final double right;
@@ -19,7 +19,12 @@ class RoundIndicator extends CustomIndicator {
       this.right = 0,
       this.height = 3,
       this.radius})
-      : super(bottom: bottom, color: color, height: height, radius: radius);
+      : super(
+          bottom: bottom,
+          color: color,
+          height: height,
+          radius: radius,
+        );
   double getTabIndicatorCenterX(double width) {
     return width / 2;
   }
@@ -29,8 +34,6 @@ class RoundIndicator extends CustomIndicator {
       Duration duration, ValueNotifier<IndicatorPosition> notifier) {
     ScrollItemInfo info =
         controller.calculateScrollTabbarItemInfo(page, sizeList!);
-
-    // if (info.nextItemWidth == -1 && !info.isLast) return;
     if (info.nextItemSize.width == -1 &&
         info.nextItemSize.width == -1 &&
         !info.isLast) return;

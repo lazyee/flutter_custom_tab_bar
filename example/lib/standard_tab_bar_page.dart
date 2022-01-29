@@ -54,13 +54,11 @@ class _StandardTabBarPageState extends State<StandardTabBarPage> {
           CustomTabBar(
             tabBarController: _tabBarController,
             height: 35,
-            // width: 200,
-            // physics: NeverScrollableScrollPhysics(),
             itemCount: pageCount,
             builder: getTabbarChild,
             indicator: StandardIndicator(
               width: 20,
-              height: 2,
+              height: 3,
               color: Colors.green,
             ),
             pageController: _controller,

@@ -32,9 +32,9 @@ class _VerticalRoundTabBarPageState extends State<VerticalRoundTabBarPage> {
 
                 padding: EdgeInsets.fromLTRB(10, 2, 10, 2),
                 alignment: Alignment.center,
-                constraints: BoxConstraints(minHeight: 45),
+                constraints: BoxConstraints(minHeight: 35),
                 child: (Text(
-                  index == 2 ? 'Tab5222222222' : 'Tab$index',
+                  index == 2 ? 'Tab222222222' : 'Tab$index',
                   style: TextStyle(fontSize: 14, color: color),
                 )),
               );
@@ -51,7 +51,7 @@ class _VerticalRoundTabBarPageState extends State<VerticalRoundTabBarPage> {
           CustomTabBar(
             tabBarController: _tabBarController,
             pinned: true,
-            width: 100,
+            width: 80,
             direction: Axis.vertical,
             itemCount: pageCount,
             builder: getTabbarChild,
@@ -61,7 +61,7 @@ class _VerticalRoundTabBarPageState extends State<VerticalRoundTabBarPage> {
               bottom: 2.5,
               left: 2.5,
               right: 2.5,
-              radius: BorderRadius.circular(15),
+              radius: BorderRadius.circular(5),
             ),
             pageController: _controller,
           ),
