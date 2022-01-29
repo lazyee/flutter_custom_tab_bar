@@ -12,8 +12,8 @@ class VerticalRoundTabBarPage extends StatefulWidget {
 }
 
 class _VerticalRoundTabBarPageState extends State<VerticalRoundTabBarPage> {
-  final int pageCount = 4;
-  late PageController _controller = PageController(initialPage: 3);
+  final int pageCount = 30;
+  late PageController _controller = PageController(initialPage: 0);
   CustomTabBarController _tabBarController = CustomTabBarController();
 
   @override
@@ -28,13 +28,11 @@ class _VerticalRoundTabBarPageState extends State<VerticalRoundTabBarPage> {
             normalColor: Colors.black,
             builder: (context, color) {
               return Container(
-                // height: 35,
-
                 padding: EdgeInsets.fromLTRB(10, 2, 10, 2),
                 alignment: Alignment.center,
                 constraints: BoxConstraints(minHeight: 35),
                 child: (Text(
-                  index == 2 ? 'Tab222222222' : 'Tab$index',
+                  index == 2 ? 'Tab22222222222222222' : 'Tab$index',
                   style: TextStyle(fontSize: 14, color: color),
                 )),
               );
@@ -50,7 +48,6 @@ class _VerticalRoundTabBarPageState extends State<VerticalRoundTabBarPage> {
         children: [
           CustomTabBar(
             tabBarController: _tabBarController,
-            pinned: true,
             width: 80,
             direction: Axis.vertical,
             itemCount: pageCount,

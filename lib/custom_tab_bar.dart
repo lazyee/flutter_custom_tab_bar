@@ -52,8 +52,7 @@ class CustomTabBar extends StatelessWidget {
       this.pinned = false,
       this.controlJump = true,
       Key? key})
-      : assert(pinned == true || (pinned == false && height != null)),
-        assert(
+      : assert(
             direction == Axis.horizontal ||
                 (direction == Axis.vertical && indicator is RoundIndicator),
             "vertical direction only support RoundIndicator"),
@@ -61,6 +60,9 @@ class CustomTabBar extends StatelessWidget {
             direction == Axis.horizontal ||
                 (direction == Axis.vertical && width != null),
             "vertical direction must set width property"),
+        assert(pinned == true ||
+            (pinned == false &&
+                (direction == Axis.vertical || height != null))),
         super(key: key);
 
   @override
@@ -181,7 +183,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
       if (_currentIndex == getCurrentPage) return;
       _currentIndex = getCurrentPage.toInt();
 
-      _tabBarController.scrollByPageView(getViewportSize() / 2, sizeList,
+      _tabBarController.scrollByPageView(_viewportSize / 2, sizeList,
           _scrollController, widget.pageController);
 
       ScrollProgressInfo? scrollProgressInfo =
@@ -197,28 +199,6 @@ class _CustomTabBarState extends State<_CustomTabBar>
   }
 
   Size _viewportSize = Size(-1, -1);
-  Size getViewportSize() {
-    //todo这里需要优化
-    double width = -1;
-    if (widget.width != null) {
-      width = widget.width!;
-    } else if (_viewportSize.width == -1) {
-      width = MediaQuery.of(context).size.width;
-    } else {
-      width = _viewportSize.width;
-    }
-
-    double height = -1;
-
-    if (widget.pinned) {
-      height = -1;
-    } else {
-      height = widget.height ?? -1;
-    }
-
-    _viewportSize = Size(width, height);
-    return _viewportSize;
-  }
 
   @override
   void dispose() {
@@ -230,9 +210,15 @@ class _CustomTabBarState extends State<_CustomTabBar>
   Widget build(BuildContext context) {
     late Widget child;
     if (widget.pinned && widget.direction == Axis.horizontal) {
+      //使用外部传入的宽度
+      assert(widget.width != null, 'width must set value on pinned is true');
+      if (_viewportSize.width != widget.width) {
+        _viewportSize = Size(widget.width!, _viewportSize.height);
+      }
+
       child = _buildTabBarItemList();
     } else {
-      Widget scrollableWidget = Scrollable(
+      child = Scrollable(
         controller: _scrollController,
         viewportBuilder: _buildViewport,
         axisDirection: widget.direction == Axis.horizontal
@@ -242,22 +228,18 @@ class _CustomTabBarState extends State<_CustomTabBar>
             ? NeverScrollableScrollPhysics()
             : BouncingScrollPhysics(),
       );
-
-      if (widget.direction == Axis.horizontal) {
-        child = MeasureSizeBox(
-            onSizeCallback: (size) {
-              _viewportSize = Size(size.width, _viewportSize.height);
-            },
-            child: scrollableWidget);
-      } else {
-        child = scrollableWidget;
-      }
     }
-
-    return Container(
-        width: getViewportSize().width == -1 ? null : _viewportSize.width,
-        height: getViewportSize().height == -1 ? null : _viewportSize.height,
-        child: child);
+    return MeasureSizeBox(
+      child: Container(
+          width: widget.width,
+          height: widget.direction == Axis.horizontal ? widget.height : null,
+          child: child),
+      onSizeCallback: (size) {
+        if (_viewportSize != size) {
+          _viewportSize = Size.copy(size);
+        }
+      },
+    );
   }
 
   Widget _buildViewport(BuildContext context, ViewportOffset offset) {
@@ -287,7 +269,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
     }
     updateProgressByAnimation(_currentIndex, index);
     _tabBarController.scrollTargetToCenter(
-        getViewportSize() / 2, index, sizeList, _scrollController,
+        _viewportSize / 2, index, sizeList, _scrollController,
         duration: kCustomerTabBarAnimDuration);
 
     widget.indicator?.indicatorScrollToIndex(
@@ -358,7 +340,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
       TabBarItemList(
         direction: widget.direction,
         viewPortWidth: widget.pinned
-            ? (getViewportSize().width == -1 ? null : _viewportSize.width)
+            ? (_viewportSize.width == -1 ? null : _viewportSize.width)
             : null,
         physics: widget.pinned
             ? NeverScrollableScrollPhysics()
@@ -374,7 +356,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
                   kCustomerTabBarAnimDuration, positionNotifier);
 
               _tabBarController.scrollTargetToCenter(
-                  getViewportSize() / 2,
+                  _viewportSize / 2,
                   widget.pageController.initialPage,
                   sizeList,
                   _scrollController);

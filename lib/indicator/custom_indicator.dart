@@ -94,13 +94,10 @@ class CustomTabBarController {
 
     return ScrollItemInfo.obtain(
         _currentIndex,
-        // getTargetItemScrollEndX(sizeList, _currentIndex),
         getTargetItemScrollEndOffset(sizeList, _currentIndex),
-        // sizeList[_currentIndex].width,
         sizeList[_currentIndex],
         nextIndexItemSize,
         _progress,
-        // getTabbarWidth(sizeList),
         getTabBarSize(sizeList),
         sizeList.length);
   }
@@ -136,32 +133,62 @@ class CustomTabBarController {
     var index = pageController.page!.ceil();
     var preIndex = pageController.page!.floor();
     var offsetPercent = pageController.page! % 1;
-    var total = sizeList![index].width / 2 + sizeList[preIndex].width / 2;
-    var startX = getTargetItemScrollStartOffset(sizeList, preIndex).dx;
-    var endX = startX + sizeList[preIndex].width / 2;
-    var offsetX = 0.0;
+    var currentIndexHalfSize = sizeList![index] / 2;
+    var preIndexHalfSize = sizeList[preIndex] / 2;
+
+    var totalSize = Size(currentIndexHalfSize.width + preIndexHalfSize.width,
+        currentIndexHalfSize.height + preIndexHalfSize.height);
+
+    var startOffset = getTargetItemScrollStartOffset(sizeList, preIndex);
+    var endSize = sizeList[preIndex] / 2 + startOffset;
+
     var contentInsertSize = getTabBarSize(sizeList);
 
     bool isVisible =
         isItemVisible(scrollController, index, sizeList, tabCenterSize * 2);
 
-    if (isVisible) {
-      if (endX + total > tabCenterSize.width) {
-        if (endX > tabCenterSize.width) {
-          offsetX = endX - tabCenterSize.width + offsetPercent * (total);
-        } else {
-          offsetX = offsetPercent * (total + endX - tabCenterSize.width);
+    var offset = 0.0;
+    if (direction == Axis.horizontal) {
+      if (isVisible) {
+        if (endSize.width + totalSize.width > tabCenterSize.width) {
+          if (endSize.width > tabCenterSize.width) {
+            offset = endSize.width -
+                tabCenterSize.width +
+                offsetPercent * totalSize.width;
+          } else {
+            offset = offsetPercent *
+                (totalSize.width + endSize.width - tabCenterSize.width);
+          }
+          if (contentInsertSize.width - offset - tabCenterSize.width >
+              tabCenterSize.width) {
+            scrollController.jumpTo(offset);
+          }
         }
-        if (contentInsertSize.width - offsetX - tabCenterSize.width >
-            tabCenterSize.width) {
-          scrollController.jumpTo(offsetX);
-        }
+      } else {
+        offset = startOffset.dx - tabCenterSize.width;
+        scrollController.jumpTo(offset < 0 ? 0 : offset);
       }
     } else {
-      if (startX < tabCenterSize.width) {
-        scrollController.jumpTo(0);
+      //竖直方向
+      if (isVisible) {
+        if (endSize.height + totalSize.height > tabCenterSize.height) {
+          if (endSize.height > tabCenterSize.height) {
+            offset = endSize.height -
+                tabCenterSize.height +
+                offsetPercent * totalSize.height;
+          } else {
+            offset = offsetPercent *
+                (totalSize.height + endSize.height - tabCenterSize.height);
+          }
+
+          if (contentInsertSize.height - offset - tabCenterSize.height >
+              tabCenterSize.height) {
+            scrollController.jumpTo(offset);
+          }
+        }
       } else {
-        scrollController.jumpTo(startX - tabCenterSize.width);
+        offset = startOffset.dy - tabCenterSize.height;
+        scrollController.jumpTo(offset < 0 ? 0 : offset);
       }
     }
   }
@@ -190,27 +217,48 @@ class CustomTabBarController {
         getTargetItemScrollEndOffset(sizeList, targetIndex);
     var tabBarSize = getTabBarSize(sizeList);
 
-    var animateToOffsetX = targetItemScrollOffset.dx -
-        sizeList![targetIndex].width / 2 -
-        tabCenterSize.width;
+    double animateToOffset = 0;
 
-    if (animateToOffsetX <= 0) {
-      animateToOffsetX = 0;
-    } else if (animateToOffsetX + tabCenterSize.width >
-        tabBarSize.width - tabCenterSize.width) {
-      if (tabBarSize.width > tabCenterSize.width * 2) {
-        animateToOffsetX = tabBarSize.width - tabCenterSize.width * 2;
+    if (direction == Axis.horizontal) {
+      animateToOffset = targetItemScrollOffset.dx -
+          sizeList![targetIndex].width / 2 -
+          tabCenterSize.width;
+    } else {
+      animateToOffset = targetItemScrollOffset.dy -
+          sizeList![targetIndex].height / 2 -
+          tabCenterSize.height;
+    }
+
+    if (animateToOffset <= 0) {
+      animateToOffset = 0;
+    } else {
+      if (direction == Axis.horizontal) {
+        if (animateToOffset + tabCenterSize.width >
+            tabBarSize.width - tabCenterSize.width) {
+          if (tabBarSize.width > tabCenterSize.width * 2) {
+            animateToOffset = tabBarSize.width - tabCenterSize.width * 2;
+          } else {
+            animateToOffset = 0;
+          }
+        }
       } else {
-        animateToOffsetX = 0;
+        if (animateToOffset + tabCenterSize.height >
+            tabBarSize.height - tabCenterSize.height) {
+          if (tabBarSize.height > tabCenterSize.height * 2) {
+            animateToOffset = tabBarSize.height - tabCenterSize.height * 2;
+          } else {
+            animateToOffset = 0;
+          }
+        }
       }
     }
 
     lastIndex = targetIndex;
 
     if (duration == null) {
-      scrollController?.jumpTo(animateToOffsetX);
+      scrollController?.jumpTo(animateToOffset);
     } else {
-      scrollController?.animateTo(animateToOffsetX,
+      scrollController?.animateTo(animateToOffset,
           duration: duration, curve: Curves.easeIn);
     }
   }

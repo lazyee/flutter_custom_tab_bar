@@ -39,29 +39,18 @@ class LinearIndicator extends CustomIndicator {
     double top = 0;
     double bottom = 0;
     if (this.width == null) {
-      // left = info.currentItemScrollEndX -
       left = info.currentItemScrollEndOffset.dx -
-          // info.currentItemWidth +
           info.currentItemSize.width +
-          // info.currentItemWidth * info.progress;
           info.currentItemSize.width * info.progress;
-      // right = info.tabbarWidth -
       right = info.tabBarSize.width -
-          // info.currentItemScrollEndX -
           info.currentItemScrollEndOffset.dx -
-          // info.nextItemWidth * info.progress;
           info.nextItemSize.width * info.progress;
     } else {
-      // left = info.currentItemScrollEndX -
       left = info.currentItemScrollEndOffset.dx -
-          // (info.currentItemWidth + this.width!) / 2 +
           (info.currentItemSize.width + this.width!) / 2 +
-          // (info.currentItemWidth + info.nextItemWidth) / 2 * info.progress;
           (info.currentItemSize.width + info.nextItemSize.width) /
               2 *
               info.progress;
-
-      // right = info.tabbarWidth - left - this.width!;
       right = info.tabBarSize.width - left - this.width!;
     }
 

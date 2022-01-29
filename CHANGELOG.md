@@ -1,3 +1,5 @@
+## [1.1.8] - 2022.01.29
+1. 增加direction属性(只支持RoundIndicator)
 ## [1.1.7] - 2022.01.10
 1. 增加CustomTabBarController的currentIndex属性和isChanging方法
 ## [1.1.6] - 2022.01.06
