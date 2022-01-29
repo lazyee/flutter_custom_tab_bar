@@ -31,29 +31,45 @@ class StandardIndicator extends CustomIndicator {
       Duration duration, ValueNotifier<IndicatorPosition> notifier) {
     ScrollItemInfo info =
         controller.calculateScrollTabbarItemInfo(page, sizeList!);
-    if (info.nextItemWidth == -1 && !info.isLast) return;
+    if (info.nextItemSize.width == -1 &&
+        info.nextItemSize.height == -1 &&
+        !info.isLast) return;
 
     double left = 0;
     double right = 0;
+    double top = 0;
+    double bottom = 0;
 
     if (info.progress <= 0.5) {
-      left = info.currentItemScrollEndX - (info.currentItemWidth + width) * 0.5;
-      right = info.tabbarWidth -
-          info.currentItemScrollEndX +
-          info.currentItemWidth * (0.5 - info.progress) -
+      // left = info.currentItemScrollEndX - (info.currentItemWidth + width) * 0.5;
+      left = info.currentItemScrollEndOffset.dx -
+          (info.currentItemSize.width + width) * 0.5;
+      // right = info.tabbarWidth -
+      right = info.tabBarSize.width -
+          // info.currentItemScrollEndX +
+          info.currentItemScrollEndOffset.dx +
+          // info.currentItemWidth * (0.5 - info.progress) -
+          info.currentItemSize.width * (0.5 - info.progress) -
           width * 0.5 -
-          info.nextItemWidth * info.progress;
+          // info.nextItemWidth * info.progress;
+          info.nextItemSize.width * info.progress;
     } else {
-      left = info.currentItemScrollEndX -
+      // left = info.currentItemScrollEndX -
+      left = info.currentItemScrollEndOffset.dx -
           width * 0.5 -
-          info.nextItemWidth * (0.5 - info.progress) -
-          info.currentItemWidth * (1 - info.progress);
+          // info.nextItemWidth * (0.5 - info.progress) -
+          info.nextItemSize.width * (0.5 - info.progress) -
+          // info.currentItemWidth * (1 - info.progress);
+          info.currentItemSize.width * (1 - info.progress);
 
-      right = info.tabbarWidth -
-          info.currentItemScrollEndX -
-          (info.nextItemWidth + width) * 0.5;
+      // right = info.tabbarWidth -
+      right = info.tabBarSize.width -
+          // info.currentItemScrollEndX -
+          info.currentItemScrollEndOffset.dx -
+          // (info.nextItemWidth + width) * 0.5;
+          (info.nextItemSize.width + width) * 0.5;
     }
-    notifier.value = IndicatorPosition(left, right);
+    notifier.value = IndicatorPosition(left, right, top, bottom);
     controller.forEachListenerCallback();
   }
 
@@ -65,8 +81,11 @@ class StandardIndicator extends CustomIndicator {
       TickerProvider vsync,
       ValueNotifier<IndicatorPosition> notifier) {
     double left = notifier.value.left;
-    double targetLeft = controller.getTargetItemScrollEndX(sizeList, index) -
-        (sizeList![index].width + width) / 2;
+    // double targetLeft = controller.getTargetItemScrollEndX(sizeList, index) -
+    //     (sizeList![index].width + width) / 2;
+    double targetLeft =
+        controller.getTargetItemScrollEndOffset(sizeList, index).dx -
+            (sizeList![index].width + width) / 2;
 
     _animationController =
         AnimationController(duration: duration, vsync: vsync);
@@ -74,10 +93,13 @@ class StandardIndicator extends CustomIndicator {
     _animation =
         Tween(begin: left, end: targetLeft).animate(_animationController!);
     _animation.addListener(() {
-      double right =
-          controller.getTabbarWidth(sizeList) - _animation.value - width;
+      // double right =
+      //     controller.getTabbarWidth(sizeList) - _animation.value - width;
 
-      notifier.value = IndicatorPosition(_animation.value, right);
+      double right =
+          controller.getTabBarSize(sizeList).width - _animation.value - width;
+
+      notifier.value = IndicatorPosition(_animation.value, right, 0, 0);
       controller.forEachListenerCallback();
     });
 

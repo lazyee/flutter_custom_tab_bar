@@ -3,14 +3,15 @@ import 'package:flutter_custom_tab_bar/library.dart';
 
 import 'page_item.dart';
 
-class RoundTabBarPage extends StatefulWidget {
-  RoundTabBarPage({Key? key}) : super(key: key);
+class VerticalRoundTabBarPage extends StatefulWidget {
+  VerticalRoundTabBarPage({Key? key}) : super(key: key);
 
   @override
-  _RoundTabBarPageState createState() => _RoundTabBarPageState();
+  _VerticalRoundTabBarPageState createState() =>
+      _VerticalRoundTabBarPageState();
 }
 
-class _RoundTabBarPageState extends State<RoundTabBarPage> {
+class _VerticalRoundTabBarPageState extends State<VerticalRoundTabBarPage> {
   final int pageCount = 4;
   late PageController _controller = PageController(initialPage: 3);
   CustomTabBarController _tabBarController = CustomTabBarController();
@@ -27,11 +28,13 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
             normalColor: Colors.black,
             builder: (context, color) {
               return Container(
+                // height: 35,
+
                 padding: EdgeInsets.fromLTRB(10, 2, 10, 2),
                 alignment: Alignment.center,
-                constraints: BoxConstraints(minWidth: 60),
+                constraints: BoxConstraints(minHeight: 45),
                 child: (Text(
-                  index == 2 ? 'Tab522222' : 'Tab$index',
+                  index == 2 ? 'Tab5222222222' : 'Tab$index',
                   style: TextStyle(fontSize: 14, color: color),
                 )),
               );
@@ -42,12 +45,14 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Round Indicator')),
-      body: Column(
+      appBar: AppBar(title: Text('Vertical Round Indicator')),
+      body: Row(
         children: [
           CustomTabBar(
             tabBarController: _tabBarController,
-            height: 35,
+            pinned: true,
+            width: 100,
+            direction: Axis.vertical,
             itemCount: pageCount,
             builder: getTabbarChild,
             indicator: RoundIndicator(
@@ -62,16 +67,12 @@ class _RoundTabBarPageState extends State<RoundTabBarPage> {
           ),
           Expanded(
               child: PageView.builder(
+                  scrollDirection: Axis.vertical,
                   controller: _controller,
                   itemCount: pageCount,
                   itemBuilder: (context, index) {
                     return PageItem(index);
                   })),
-          TextButton(
-              onPressed: () {
-                _tabBarController.animateToIndex(3);
-              },
-              child: Text('gogogo'))
         ],
       ),
     );

@@ -9,12 +9,20 @@ class CustomTabBarController {
   int _currentIndex = 0;
   double _progress = 0;
 
+  Axis _direction = Axis.horizontal;
+
   List<VoidCallback?> _listeners = [];
 
   int get currentIndex => _currentIndex;
 
   void setCurrentIndex(int index) {
     _currentIndex = index;
+  }
+
+  Axis get direction => _direction;
+
+  void setOrientation(Axis orientation) {
+    this._direction = orientation;
   }
 
   void addListener(VoidCallback? callback) {
@@ -78,19 +86,22 @@ class CustomTabBarController {
 
     _lastPage = page;
 
-    //获取下一个Item的宽度
-    double nextIndexItemWidth = -1;
+    //获取下一个Item的Size
+    Size nextIndexItemSize = Size(-1, -1);
     if (_currentIndex < sizeList.length - 1) {
-      nextIndexItemWidth = sizeList[_currentIndex + 1].width;
+      nextIndexItemSize = sizeList[_currentIndex + 1];
     }
 
     return ScrollItemInfo.obtain(
         _currentIndex,
-        getTargetItemScrollEndX(sizeList, _currentIndex),
-        sizeList[_currentIndex].width,
-        nextIndexItemWidth,
+        // getTargetItemScrollEndX(sizeList, _currentIndex),
+        getTargetItemScrollEndOffset(sizeList, _currentIndex),
+        // sizeList[_currentIndex].width,
+        sizeList[_currentIndex],
+        nextIndexItemSize,
         _progress,
-        getTabbarWidth(sizeList),
+        // getTabbarWidth(sizeList),
+        getTabBarSize(sizeList),
         sizeList.length);
   }
 
@@ -119,67 +130,82 @@ class CustomTabBarController {
   }
 
   ///根据pageController来设置偏移量
-  void scrollByPageView(double tabCenterX, List<Size>? sizeList,
+  // void scrollByPageView(double tabCenterX, List<Size>? sizeList,
+  //     ScrollController? scrollController, PageController pageController) {
+  void scrollByPageView(Size tabCenterSize, List<Size>? sizeList,
       ScrollController? scrollController, PageController pageController) {
     if (scrollController == null) return;
     var index = pageController.page!.ceil();
     var preIndex = pageController.page!.floor();
     var offsetPercent = pageController.page! % 1;
     var total = sizeList![index].width / 2 + sizeList[preIndex].width / 2;
-    var startX = getTargetItemScrollStartX(sizeList, preIndex);
+    var startX = getTargetItemScrollStartOffset(sizeList, preIndex).dx;
     var endX = startX + sizeList[preIndex].width / 2;
     var offsetX = 0.0;
-    var contentInsertWidth = getTabbarWidth(sizeList);
+    // var contentInsertWidth = getTabbarWidth(sizeList);
+    var contentInsertSize = getTabBarSize(sizeList);
 
     bool isVisible =
-        isItemVisible(scrollController, index, sizeList, tabCenterX * 2);
+        isItemVisible(scrollController, index, sizeList, tabCenterSize * 2);
 
     if (isVisible) {
-      if (endX + total > tabCenterX) {
-        if (endX > tabCenterX) {
-          offsetX = endX - tabCenterX + offsetPercent * (total);
+      if (endX + total > tabCenterSize.width) {
+        if (endX > tabCenterSize.width) {
+          offsetX = endX - tabCenterSize.width + offsetPercent * (total);
         } else {
-          offsetX = offsetPercent * (total + endX - tabCenterX);
+          offsetX = offsetPercent * (total + endX - tabCenterSize.width);
         }
-        if (contentInsertWidth - offsetX - tabCenterX > tabCenterX) {
+        if (contentInsertSize.width - offsetX - tabCenterSize.width >
+            tabCenterSize.width) {
           scrollController.jumpTo(offsetX);
         }
       }
     } else {
-      if (startX < tabCenterX) {
+      if (startX < tabCenterSize.width) {
         scrollController.jumpTo(0);
       } else {
-        scrollController.jumpTo(startX - tabCenterX);
+        scrollController.jumpTo(startX - tabCenterSize.width);
       }
     }
   }
 
   ///判断item是否显示在可见区域
   bool isItemVisible(ScrollController scrollController, index,
-      List<Size>? sizeList, double tabbarWidth) {
-    var startX = getTargetItemScrollStartX(sizeList, index);
-    return scrollController.position.pixels < startX &&
-        startX < scrollController.position.pixels + tabbarWidth;
+      List<Size>? sizeList, Size tabBarSize) {
+    // var startX = getTargetItemScrollStartX(sizeList, index);
+    var startOffset = getTargetItemScrollStartOffset(sizeList, index);
+
+    if (direction == Axis.horizontal) {
+      return scrollController.position.pixels < startOffset.dx &&
+          startOffset.dx < scrollController.position.pixels + tabBarSize.width;
+    }
+    return scrollController.position.pixels < startOffset.dy &&
+        startOffset.dy < scrollController.position.pixels + tabBarSize.height;
   }
 
   int lastIndex = 0;
 
   ///滚动目标索引的项到中间位置
-  void scrollTargetToCenter(double tabCenterX, int targetIndex,
+  void scrollTargetToCenter(Size tabCenterSize, int targetIndex,
       List<Size>? sizeList, ScrollController? scrollController,
       {Duration? duration}) {
     if (targetIndex == lastIndex) return;
-    var targetItemScrollX = getTargetItemScrollEndX(sizeList, targetIndex);
-    var tabbarWidth = getTabbarWidth(sizeList);
+    // var targetItemScrollX = getTargetItemScrollEndX(sizeList, targetIndex);
+    var targetItemScrollOffset =
+        getTargetItemScrollEndOffset(sizeList, targetIndex);
+    // var tabbarWidth = getTabbarWidth(sizeList);
+    var tabBarSize = getTabBarSize(sizeList);
 
-    var animateToOffsetX =
-        targetItemScrollX - sizeList![targetIndex].width / 2 - tabCenterX;
+    var animateToOffsetX = targetItemScrollOffset.dx -
+        sizeList![targetIndex].width / 2 -
+        tabCenterSize.width;
 
     if (animateToOffsetX <= 0) {
       animateToOffsetX = 0;
-    } else if (animateToOffsetX + tabCenterX > tabbarWidth - tabCenterX) {
-      if (tabbarWidth > tabCenterX * 2) {
-        animateToOffsetX = tabbarWidth - tabCenterX * 2;
+    } else if (animateToOffsetX + tabCenterSize.width >
+        tabBarSize.width - tabCenterSize.width) {
+      if (tabBarSize.width > tabCenterSize.width * 2) {
+        animateToOffsetX = tabBarSize.width - tabCenterSize.width * 2;
       } else {
         animateToOffsetX = 0;
       }
@@ -195,28 +221,37 @@ class CustomTabBarController {
     }
   }
 
-  double getTargetItemScrollEndX(List<Size>? sizeList, int index) {
-    double totalX = 0;
+  Offset getTargetItemScrollEndOffset(List<Size>? sizeList, int index) {
+    double width = 0;
+    double height = 0;
     for (int i = 0; i <= index; i++) {
-      totalX += sizeList![i].width;
+      width += sizeList![i].width;
+      height += sizeList[i].height;
     }
-    return totalX;
+    return Offset(width, height);
   }
 
-  double getTargetItemScrollStartX(List<Size>? sizeList, int index) {
-    double totalX = 0;
+  Offset getTargetItemScrollStartOffset(List<Size>? sizeList, int index) {
+    double width = 0;
+    double height = 0;
+
     for (int i = 0; i < index; i++) {
-      totalX += sizeList![i].width;
+      width += sizeList![i].width;
+      height += sizeList[i].height;
     }
-    return totalX;
+
+    return Offset(width, height);
   }
 
-  double getTabbarWidth(List<Size>? sizeList) {
-    double totalWidth = 0;
-    sizeList!.forEach((item) {
-      totalWidth += item.width;
+  Size getTabBarSize(List<Size>? sizeList) {
+    double width = 0;
+    double height = 0;
+    sizeList?.forEach((item) {
+      width += item.width;
+      height += item.height;
     });
-    return totalWidth;
+
+    return Size(width, height);
   }
 
   double getTabIndicatorCenterX(double width) {
@@ -225,18 +260,21 @@ class CustomTabBarController {
 }
 
 abstract class CustomIndicator {
-  final double? top;
   final Color color;
+  final double left;
+  final double right;
+  final double? top;
   final double bottom;
   final double height;
   final double? width;
   final BorderRadius? radius;
-
   late CustomTabBarController controller;
 
   CustomIndicator(
       {this.bottom = 0,
       this.top,
+      this.right = 0,
+      this.left = 0,
       this.width,
       required this.color,
       required this.height,

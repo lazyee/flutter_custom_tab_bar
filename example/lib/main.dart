@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'linear_tab_bar_page.dart';
 import 'round_tab_bar_page.dart';
 import 'standard_tab_bar_page.dart';
+import 'vertical_round_tab_bar_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -64,6 +65,8 @@ class _MyHomePageState extends State<MyHomePage> {
           _buildItem(
               context, "Pinned Linear Tab Bar", PinnedLinearTabBarPage()),
           _buildItem(context, "Round Tab Bar", RoundTabBarPage()),
+          _buildItem(
+              context, "Vertical Round Tab Bar", VerticalRoundTabBarPage()),
         ]));
   }
 }

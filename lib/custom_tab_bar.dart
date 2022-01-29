@@ -28,6 +28,7 @@ class CustomTabBarContext extends InheritedWidget {
 }
 
 class CustomTabBar extends StatelessWidget {
+  final Axis direction;
   final IndexedTabBarItemBuilder builder;
   final int itemCount;
   final PageController pageController;
@@ -43,6 +44,7 @@ class CustomTabBar extends StatelessWidget {
       required this.itemCount,
       required this.pageController,
       this.height,
+      this.direction = Axis.horizontal,
       this.onTapItem,
       this.indicator,
       this.tabBarController,
@@ -51,12 +53,15 @@ class CustomTabBar extends StatelessWidget {
       this.controlJump = true,
       Key? key})
       : assert(pinned == true || (pinned == false && height != null)),
+        assert(direction == Axis.horizontal ||
+            (direction == Axis.vertical && width != null)),
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return CustomTabBarContext(
         child: _CustomTabBar(
+            direction: direction,
             onTapItem: onTapItem,
             controlJump: controlJump,
             indicator: indicator,
@@ -81,11 +86,13 @@ class _CustomTabBar extends StatefulWidget {
   final bool pinned;
   final bool controlJump;
   final CustomTabBarController? tabBarController;
+  final Axis direction;
 
   const _CustomTabBar(
       {required this.builder,
       required this.itemCount,
       required this.pageController,
+      this.direction = Axis.horizontal,
       this.height,
       this.onTapItem,
       this.tabBarController,
@@ -94,8 +101,7 @@ class _CustomTabBar extends StatefulWidget {
       this.width,
       this.pinned = false,
       Key? key})
-      : assert(pinned == true || (pinned == false && height != null)),
-        super(key: key);
+      : super(key: key);
 
   @override
   _CustomTabBarState createState() => _CustomTabBarState();
@@ -110,15 +116,18 @@ class _CustomTabBarState extends State<_CustomTabBar>
       widget.tabBarController ?? CustomTabBarController();
   late int _currentIndex = widget.pageController.initialPage;
   ValueNotifier<IndicatorPosition> positionNotifier =
-      ValueNotifier(IndicatorPosition(0, 0));
+      ValueNotifier(IndicatorPosition(0, 0, 0, 0));
   late ValueNotifier<ScrollProgressInfo>? progressNotifier =
       CustomTabBarContext.of(context)?.progressNotifier;
   double get getCurrentPage => widget.pageController.page ?? 0;
 
   double indicatorLeft = 0;
   double indicatorRight = 0;
+  double indicatorTop = 0;
+  double indicatorBottom = 0;
 
   void _init() {
+    _tabBarController.setOrientation(widget.direction);
     _tabBarController.setAnimateToIndexCallback(_animateToIndex);
     widget.indicator?.controller = _tabBarController;
   }
@@ -137,8 +146,14 @@ class _CustomTabBarState extends State<_CustomTabBar>
 
     positionNotifier.addListener(() {
       setState(() {
-        indicatorLeft = positionNotifier.value.left;
-        indicatorRight = positionNotifier.value.right;
+        indicatorLeft =
+            positionNotifier.value.left + (widget.indicator?.left ?? 0);
+        indicatorRight =
+            positionNotifier.value.right + (widget.indicator?.right ?? 0);
+        indicatorTop =
+            positionNotifier.value.top + (widget.indicator?.top ?? 0);
+        indicatorBottom =
+            positionNotifier.value.bottom + (widget.indicator?.bottom ?? 0);
       });
     });
 
@@ -155,7 +170,10 @@ class _CustomTabBarState extends State<_CustomTabBar>
       if (_currentIndex == getCurrentPage) return;
       _currentIndex = getCurrentPage.toInt();
 
-      _tabBarController.scrollByPageView(getViewportWidth() / 2, sizeList,
+      // _tabBarController.scrollByPageView(getViewportWidth() / 2, sizeList,
+      //     _scrollController, widget.pageController);
+
+      _tabBarController.scrollByPageView(getViewportSize() / 2, sizeList,
           _scrollController, widget.pageController);
 
       ScrollProgressInfo? scrollProgressInfo =
@@ -170,23 +188,50 @@ class _CustomTabBarState extends State<_CustomTabBar>
     });
   }
 
-  double getViewportWidth() {
+  // double getViewportWidth() {
+  //   if (widget.width != null) {
+  //     return widget.width!;
+  //   }
+
+  //   if (_viewportWidth == 0) {
+  //     return MediaQuery.of(context).size.width;
+  //   }
+  //   return _viewportWidth;
+  // }
+
+  // double _viewportWidth = 0;
+  // double? getViewportHeight() {
+  //   if (widget.pinned) {
+  //     return null;
+  //   }
+  //   return widget.height;
+  // }
+
+  Size _viewportSize = Size(-1, -1);
+  Size getViewportSize() {
+    double width = -1;
     if (widget.width != null) {
-      return widget.width!;
+      // return widget.width!;
+      width = widget.width!;
+    } else if (_viewportSize.width == -1) {
+      width = MediaQuery.of(context).size.width;
+    } else {
+      width = _viewportSize.width;
     }
 
-    if (_viewportWidth == 0) {
-      return MediaQuery.of(context).size.width;
-    }
-    return _viewportWidth;
-  }
+    double height = -1;
 
-  double _viewportWidth = 0;
-  double? getViewportHeight() {
     if (widget.pinned) {
-      return null;
+      // return null;
+      height = -1;
+    } else {
+      height = widget.height ?? -1;
     }
-    return widget.height;
+
+    _viewportSize = Size(width, height);
+    return _viewportSize;
+    // return Size(width, height);
+    // return widget.height;
   }
 
   @override
@@ -197,29 +242,51 @@ class _CustomTabBarState extends State<_CustomTabBar>
 
   @override
   Widget build(BuildContext context) {
+    late Widget child;
+    if (widget.pinned && widget.direction == Axis.horizontal) {
+      child = _buildTabBarItemList();
+    } else {
+      Widget scrollableWidget = Scrollable(
+        controller: _scrollController,
+        viewportBuilder: _buildViewport,
+        axisDirection: widget.direction == Axis.horizontal
+            ? AxisDirection.right
+            : AxisDirection.down,
+        physics: widget.pinned
+            ? NeverScrollableScrollPhysics()
+            : BouncingScrollPhysics(),
+      );
+
+      if (widget.direction == Axis.horizontal) {
+        child = MeasureSizeBox(
+            onSizeCallback: (size) {
+              // _viewportWidth = size.width;
+              // _viewportSize.width = size.width;
+              _viewportSize = Size(size.width, _viewportSize.height);
+            },
+            child: scrollableWidget);
+      } else {
+        child = scrollableWidget;
+      }
+    }
+
+    // return Container(
+    //     height: getViewportHeight(), width: getViewportWidth(), child: child);
+
+    // print(_viewportSize.width);
+    // print(_viewportSize.height);
     return Container(
-        height: getViewportHeight(),
-        width: getViewportWidth(),
-        child: widget.pinned
-            ? _buildTabBarItemRow()
-            : MeasureSizeBox(
-                onSizeCallback: (size) {
-                  _viewportWidth = size.width;
-                },
-                child: Scrollable(
-                  controller: _scrollController,
-                  viewportBuilder: _buildViewport,
-                  axisDirection: AxisDirection.right,
-                  physics: widget.pinned
-                      ? NeverScrollableScrollPhysics()
-                      : BouncingScrollPhysics(),
-                )));
+        width: getViewportSize().width == -1 ? null : _viewportSize.width,
+        height: getViewportSize().height == -1 ? null : _viewportSize.height,
+        child: child);
   }
 
   Widget _buildViewport(BuildContext context, ViewportOffset offset) {
     return Viewport(
       offset: offset,
-      axisDirection: AxisDirection.right,
+      axisDirection: widget.direction == Axis.horizontal
+          ? AxisDirection.right
+          : AxisDirection.down,
       slivers: [_buildSlivers()],
     );
   }
@@ -241,7 +308,11 @@ class _CustomTabBarState extends State<_CustomTabBar>
     }
     updateProgressByAnimation(_currentIndex, index);
     _tabBarController.scrollTargetToCenter(
-        getViewportWidth() / 2, index, sizeList, _scrollController,
+        // getViewportWidth() / 2, index, sizeList, _scrollController,
+        getViewportSize() / 2,
+        index,
+        sizeList,
+        _scrollController,
         duration: kCustomerTabBarAnimDuration);
 
     widget.indicator?.indicatorScrollToIndex(
@@ -293,8 +364,8 @@ class _CustomTabBarState extends State<_CustomTabBar>
       key: widget.key,
       left: indicatorLeft,
       right: indicatorRight,
-      bottom: widget.indicator?.bottom,
-      top: widget.indicator?.top,
+      top: indicatorTop,
+      bottom: indicatorBottom,
       child: Container(
         width: widget.indicator?.width,
         height: widget.indicator?.height,
@@ -306,11 +377,14 @@ class _CustomTabBarState extends State<_CustomTabBar>
     );
   }
 
-  Widget _buildTabBarItemRow() {
+  Widget _buildTabBarItemList() {
     return Stack(children: [
       if (widget.indicator != null) _buildIndicator(),
-      TabBarItemRow(
-        viewPortWidth: widget.pinned ? getViewportWidth() : null,
+      TabBarItemList(
+        direction: widget.direction,
+        viewPortWidth: widget.pinned
+            ? (getViewportSize().width == -1 ? null : _viewportSize.width)
+            : null,
         physics: widget.pinned
             ? NeverScrollableScrollPhysics()
             : BouncingScrollPhysics(),
@@ -325,7 +399,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
                   kCustomerTabBarAnimDuration, positionNotifier);
 
               _tabBarController.scrollTargetToCenter(
-                  getViewportWidth() / 2,
+                  getViewportSize() / 2,
                   widget.pageController.initialPage,
                   sizeList,
                   _scrollController);
@@ -338,11 +412,12 @@ class _CustomTabBarState extends State<_CustomTabBar>
 
   Widget _buildSlivers() {
     return SliverList(
-        delegate: SliverChildListDelegate([_buildTabBarItemRow()]));
+        delegate: SliverChildListDelegate([_buildTabBarItemList()]));
   }
 }
 
-class TabBarItemRow extends StatefulWidget {
+class TabBarItemList extends StatefulWidget {
+  final Axis direction;
   final double? viewPortWidth;
   final int itemCount;
   final IndexedWidgetBuilder builder;
@@ -351,7 +426,7 @@ class TabBarItemRow extends StatefulWidget {
   final ScrollPhysics physics;
   final VoidCallback onMeasureCompleted;
 
-  TabBarItemRow(
+  TabBarItemList(
       {required this.viewPortWidth,
       required this.itemCount,
       required this.builder,
@@ -359,14 +434,15 @@ class TabBarItemRow extends StatefulWidget {
       required this.onTapItem,
       required this.physics,
       required this.onMeasureCompleted,
+      required this.direction,
       key})
       : super(key: key);
 
   @override
-  TabBarItemRowState createState() => TabBarItemRowState();
+  TabBarItemListState createState() => TabBarItemListState();
 }
 
-class TabBarItemRowState extends State<TabBarItemRow> {
+class TabBarItemListState extends State<TabBarItemList> {
   bool isMeasureCompletedCallback = false;
 
   Widget _createItem(int index, Widget child) {
@@ -390,8 +466,9 @@ class TabBarItemRowState extends State<TabBarItemRow> {
   Widget build(BuildContext context) {
     List<Widget> widgetList = [];
 
-    ///如果不能滑动就平分父级组件宽度
-    if (widget.physics is NeverScrollableScrollPhysics) {
+    ///如果不能滑动并且是水平方向就平分父级组件宽度
+    if (widget.physics is NeverScrollableScrollPhysics &&
+        widget.direction == Axis.horizontal) {
       double? itemWidth = (widget.viewPortWidth ?? 0) / widget.itemCount;
       for (var i = 0; i < widget.itemCount; i++) {
         widgetList.add(_createItem(
@@ -422,7 +499,13 @@ class TabBarItemRowState extends State<TabBarItemRow> {
             )));
       }
     }
-    return Row(children: widgetList);
+
+    if (widget.direction == Axis.horizontal) {
+      return Row(children: widgetList);
+    }
+
+    return Container(
+        width: widget.viewPortWidth, child: Column(children: widgetList));
   }
 }
 
@@ -450,8 +533,9 @@ class _RenderConstrainedBox extends RenderConstrainedBox {
   @override
   void layout(Constraints constraints, {bool parentUsesSize = false}) {
     super.layout(constraints, parentUsesSize: parentUsesSize);
-
+    print(size);
     if (size.isEmpty) return;
+
     onSizeCallback(Size.copy(size));
   }
 }
