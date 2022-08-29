@@ -1,3 +1,5 @@
+## [1.2.0] - 2022.08.29
+1. 移除在3.x版本flutter中WidgetsBinding.instance不再为空导致的警告
 ## [1.1.9] - 2022.01.30
 1. 增加direction属性(只支持RoundIndicator)
 ## [1.1.7] - 2022.01.10

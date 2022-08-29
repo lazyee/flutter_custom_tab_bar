@@ -350,18 +350,24 @@ class _CustomTabBarState extends State<_CustomTabBar>
         itemCount: widget.itemCount,
         sizeList: sizeList,
         onMeasureCompleted: () {
-          WidgetsBinding.instance?.addPostFrameCallback((d) {
-            setState(() {
-              widget.indicator?.updateScrollIndicator(getCurrentPage, sizeList,
-                  kCustomerTabBarAnimDuration, positionNotifier);
+          var widgetsBindingInstance = WidgetsBinding.instance;
+          //这里是兼容flutter2.0和3.0之间的差异
+          //WidgetsBinding.instance 在2.x的版本是可空的,但是在3.x版本是不可空的
+          //原有的WidgetsBinding.instance?在3.x版本抛警告,所以在这里做下兼容
+          if (widgetsBindingInstance != null) {
+            widgetsBindingInstance.addPostFrameCallback((d) {
+              setState(() {
+                widget.indicator?.updateScrollIndicator(getCurrentPage,
+                    sizeList, kCustomerTabBarAnimDuration, positionNotifier);
 
-              _tabBarController.scrollTargetToCenter(
-                  _viewportSize / 2,
-                  widget.pageController.initialPage,
-                  sizeList,
-                  _scrollController);
+                _tabBarController.scrollTargetToCenter(
+                    _viewportSize / 2,
+                    widget.pageController.initialPage,
+                    sizeList,
+                    _scrollController);
+              });
             });
-          });
+          }
         },
       )
     ]);
