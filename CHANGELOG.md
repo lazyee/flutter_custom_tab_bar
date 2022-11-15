@@ -1,3 +1,5 @@
+## [1.2.1] - 2022.11.14
+1. 修复在setState后tabBarItem位置便宜的问题
 ## [1.2.0] - 2022.08.29
 1. 移除在3.x版本flutter中WidgetsBinding.instance不再为空导致的警告
 ## [1.1.9] - 2022.01.30

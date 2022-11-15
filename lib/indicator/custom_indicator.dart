@@ -119,7 +119,6 @@ class CustomTabBarController {
       _progress = 1 - _progress;
     }
     _progress = _progress == 0 ? 1 : _progress;
-
     return ScrollProgressInfo(
         progress: _progress,
         targetIndex: targetIndex,

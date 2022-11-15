@@ -125,8 +125,10 @@ class _CustomTabBarState extends State<_CustomTabBar>
   late int _currentIndex = widget.pageController.initialPage;
   ValueNotifier<IndicatorPosition> positionNotifier =
       ValueNotifier(IndicatorPosition(0, 0, 0, 0));
-  late ValueNotifier<ScrollProgressInfo>? progressNotifier =
+  ValueNotifier<ScrollProgressInfo>? get progressNotifier =>
       CustomTabBarContext.of(context)?.progressNotifier;
+  // late ValueNotifier<ScrollProgressInfo>? progressNotifier =
+  //     CustomTabBarContext.of(context)?.progressNotifier;
   double get getCurrentPage => widget.pageController.page ?? 0;
 
   double indicatorLeft = 0;
@@ -135,6 +137,10 @@ class _CustomTabBarState extends State<_CustomTabBar>
   double indicatorBottom = 0;
 
   void _init() {
+    for (int i = sizeList.length; i < widget.itemCount; i++) {
+      sizeList.add(Size(0, 0));
+    }
+
     _tabBarController.setOrientation(widget.direction);
     _tabBarController.setAnimateToIndexCallback(_animateToIndex);
     widget.indicator?.controller = _tabBarController;
@@ -144,6 +150,7 @@ class _CustomTabBarState extends State<_CustomTabBar>
   void didUpdateWidget(covariant _CustomTabBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     _init();
+    progressNotifier?.value = ScrollProgressInfo(currentIndex: _currentIndex);
   }
 
   @override
@@ -290,7 +297,8 @@ class _CustomTabBarState extends State<_CustomTabBar>
 
     animation.addListener(() {
       if (!mounted) return null;
-      progressNotifier!.value = ScrollProgressInfo(
+
+      progressNotifier?.value = ScrollProgressInfo(
           progress: animation.value,
           currentIndex: currentIndex,
           targetIndex: targetIndex);
@@ -426,6 +434,15 @@ class TabBarItemListState extends State<TabBarItemList> {
   }
 
   @override
+  void didUpdateWidget(covariant TabBarItemList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.itemCount != oldWidget.itemCount) {
+      isMeasureCompletedCallback = false;
+      setState(() {});
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     List<Widget> widgetList = [];
 
@@ -451,7 +468,8 @@ class TabBarItemListState extends State<TabBarItemList> {
         widgetList.add(_createItem(
             i,
             MeasureSizeBox(
-              child: widget.builder(context, i),
+              child: Container(
+                  key: ValueKey(i), child: widget.builder(context, i)),
               onSizeCallback: (size) {
                 widget.sizeList[i] = size;
                 if (isAllItemMeasureComplete() && !isMeasureCompletedCallback) {
@@ -518,16 +536,17 @@ class TabBarItem extends StatefulWidget {
 }
 
 class _TabBarItemState extends State<TabBarItem> {
-  ValueNotifier<ScrollProgressInfo>? progressNotifier;
+  ValueNotifier<ScrollProgressInfo>? get progressNotifier =>
+      CustomTabBarContext.of(context)?.progressNotifier;
   ScrollProgressInfo? info;
   @override
   void initState() {
     super.initState();
+
     Future.delayed(Duration.zero, () {
-      progressNotifier = CustomTabBarContext.of(context)?.progressNotifier;
-      setState(() {
-        info = progressNotifier!.value;
-      });
+      // setState(() {
+      //   info = progressNotifier!.value;
+      // });
       progressNotifier?.addListener(() {
         setState(() {
           info = progressNotifier!.value;
@@ -539,6 +558,7 @@ class _TabBarItemState extends State<TabBarItem> {
 
   @override
   Widget build(BuildContext context) {
+    info = progressNotifier?.value;
     if (info == null) return SizedBox();
     if (widget.transform != null) {
       return widget.transform!.build(context, widget.index, info!);
